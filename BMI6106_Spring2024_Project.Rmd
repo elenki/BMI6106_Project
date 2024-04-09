@@ -1,0 +1,229 @@
+---
+title: "Chronic Disease Prevalence in the United States"
+subtitle: "Analysis using PLACES: County Data, 2023 release"
+author: "Augustine Takyi and Chetan Elenki"
+output: 
+    html_document:
+        theme: paper
+        highlight: breeze
+        code_folding: show
+        fig_caption: true
+        toc: true
+        toc_depth: 3
+        toc_float: true
+        number_sections: true
+        fig_width: 8
+        fig_height: 6
+        fig_align: "center"
+        df_print: paged
+        keep_md: true
+---
+
+# Loading the data
+Lets start by loading the data and examining the first few rows.
+```{r load_data, message=FALSE, warning=FALSE}
+    # loading data
+    library(readr)
+
+    # google drive location of the files
+    places_county_2023_url <- 'https://drive.google.com/file/d/1XN8AfQ36pSBkfFXMI3rLpjij0Rt67WCj/view?usp=sharing'
+
+    # define a function to read the data
+    read_data <- function(url){
+    # extract file id from the url
+    file_id <- strsplit(url, '/')[[1]][6]
+    
+    # create a read path
+    read_path <- paste0('https://drive.usercontent.google.com/download?id=', file_id, '&export=download&authuser=0&confirm=t')
+    
+    # read the data
+    df <- read_csv(read_path)
+    return(df)
+    }
+
+    # read the data
+    places_county_2023 <- read_data(places_county_2023_url)
+
+    # display the first few rows
+    head(places_county_2023)
+```
+
+The dataset contains the following columns:
+```{r column_names, message=FALSE, warning=FALSE}
+    # display the column names
+    colnames(places_county_2023)
+```
+
+# Data Preparation
+We will create new datasets for our analysis by filtering the columns of interest.
+```{r data_preparation_1, message=FALSE, warning=FALSE}
+    # key columns
+    key_cols <- c('StateAbbr', 'StateDesc', 'CountyName', 'CountyFIPS', 'TotalPopulation', 'Geolocation')
+
+    
+    chronic_disease_cols <- c('ARTHRITIS_AdjPrev', 'BPHIGH_AdjPrev', 'CANCER_AdjPrev', 'CASTHMA_AdjPrev', 
+                                'CERVICAL_AdjPrev', 'CHD_AdjPrev', 'COPD_AdjPrev', 'DEPRESSION_AdjPrev', 
+                                'DIABETES_AdjPrev', 'KIDNEY_AdjPrev', 'STROKE_AdjPrev')
+
+    gen_health_cols <- c('GHLTH_AdjPrev', 'MHLTH_AdjPrev', 'PHLTH_AdjPrev')
+
+    risk_factors_cols <- c('HIGHCHOL_AdjPrev', 'OBESITY_AdjPrev')
+    disabilities_cols <- c('DISABILITY_AdjPrev', 'HEARING_AdjPrev', 'VISION_AdjPrev', 'COGNITION_AdjPrev', 'MOBILITY_AdjPrev', 'SELFCARE_AdjPrev', 'INDEPLIVE_AdjPrev')
+
+    negative_health_behavior_cols <- c('BINGE_AdjPrev', 'CSMOKING_AdjPrev')
+    positive_health_behavior_cols <- c('LPA_AdjPrev')
+    preventive_care_cols <- c('BPMED_AdjPrev', 'CHECKUP_AdjPrev', 'CHOLSCREEN_AdjPrev', 'COLON_SCREEN_AdjPrev')
+    sdoh_cols <- c('ACCESS2_AdjPrev')
+
+    # create the datasets
+    chronic_disease_data <- places_county_2023[, c(key_cols, chronic_disease_cols)]
+    gen_health_data <- places_county_2023[, c(key_cols, gen_health_cols)]
+    risk_factors_data <- places_county_2023[, c(key_cols, risk_factors_cols)]
+    disabilities_data <- places_county_2023[, c(key_cols, disabilities_cols)]
+    negative_health_behavior_data <- places_county_2023[, c(key_cols, negative_health_behavior_cols)]
+    positive_health_behavior_data <- places_county_2023[, c(key_cols, positive_health_behavior_cols)]
+    preventive_care_data <- places_county_2023[, c(key_cols, preventive_care_cols)]
+    sdoh_data <- places_county_2023[, c(key_cols, sdoh_cols)]
+
+    # display the first few rows of the datasets
+    head(chronic_disease_data)
+    head(gen_health_data)
+    head(risk_factors_data)
+    head(disabilities_data)
+    head(negative_health_behavior_data)
+    head(positive_health_behavior_data)
+    head(preventive_care_data)
+    head(sdoh_data)
+```
+
+# Descriptive Statistics
+We will now calculate the descriptive statistics for the datasets.
+```{r descriptive_statistics, message=FALSE, warning=FALSE}
+    # function to calculate descriptive statistics
+    calculate_descriptive_statistics <- function(df){
+        # calculate the descriptive statistics
+        desc_stats <- summary(df)
+        return(desc_stats)
+    }
+
+    # calculate the descriptive statistics
+    chronic_disease_desc_stats <- calculate_descriptive_statistics(chronic_disease_data)
+    gen_health_desc_stats <- calculate_descriptive_statistics(gen_health_data)
+    risk_factors_desc_stats <- calculate_descriptive_statistics(risk_factors_data)
+    disabilities_desc_stats <- calculate_descriptive_statistics(disabilities_data)
+    negative_health_behavior_desc_stats <- calculate_descriptive_statistics(negative_health_behavior_data)
+    positive_health_behavior_desc_stats <- calculate_descriptive_statistics(positive_health_behavior_data)
+    preventive_care_desc_stats <- calculate_descriptive_statistics(preventive_care_data)
+    sdoh_desc_stats <- calculate_descriptive_statistics(sdoh_data)
+
+    # display the descriptive statistics
+    chronic_disease_desc_stats
+    gen_health_desc_stats
+    risk_factors_desc_stats
+    disabilities_desc_stats
+    negative_health_behavior_desc_stats
+    positive_health_behavior_desc_stats
+    preventive_care_desc_stats
+    sdoh_desc_stats
+```
+
+# Data Visualization
+We will now visualize the data using bar plots.
+```{r data_visualization, message=FALSE, warning=FALSE}
+    # load the required libraries
+    library(ggplot2)
+    library(dplyr)
+    library(tidyr)
+
+    # function to create bar plots
+    create_bar_plot <- function(df, title){
+        # create a dataframe for plotting
+        df_plot <- df %>%
+            gather(key = 'variable', value = 'value', -c(key_cols)) %>%
+            mutate(variable = factor(variable, levels = colnames(df)[-(1:length(key_cols))]))
+        
+        # create the bar plot
+        p <- ggplot(df_plot, aes(x = variable, y = value)) +
+            geom_bar(stat = 'identity', fill = 'steelblue') +
+            theme_minimal() +
+            theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+            labs(title = title, x = 'Variable', y = 'Value')
+        
+        return(p)
+    }
+
+    # create the bar plots
+    chronic_disease_plot <- create_bar_plot(chronic_disease_data, 'Chronic Disease Data')
+    gen_health_plot <- create_bar_plot(gen_health_data, 'General Health Data')
+    risk_factors_plot <- create_bar_plot(risk_factors_data, 'Risk Factors Data')
+    disabilities_plot <- create_bar_plot(disabilities_data, 'Disabilities Data')
+    negative_health_behavior_plot <- create_bar_plot(negative_health_behavior_data, 'Negative Health Behavior Data')
+    positive_health_behavior_plot <- create_bar_plot(positive_health_behavior_data, 'Positive Health Behavior Data')
+    preventive_care_plot <- create_bar_plot(preventive_care_data, 'Preventive Care Data')
+    sdoh_plot <- create_bar_plot(sdoh_data, 'Social Determinants of Health Data')
+
+    # display the bar plots
+    print(chronic_disease_plot)
+    print(gen_health_plot)
+    print(risk_factors_plot)
+    print(disabilities_plot)
+    print(negative_health_behavior_plot)
+    print(positive_health_behavior_plot)
+    print(preventive_care_plot)
+    print(sdoh_plot)
+```
+
+# Enrich County Data
+```{r enrich_county_data, message=FALSE, warning=FALSE}
+    # load urban rural classification data
+    urban_rural_url <- 'https://drive.google.com/file/d/1-w2AvZj4_sqEzMMS-NCPsILAZzKPaVvE/view?usp=sharing'
+    urban_rural_data <- read_data(urban_rural_url)
+
+    # select the required columns
+    # 'State Abr.', 'County name', 'FIPS code', '2013 code'
+    # rename to: 'StateAbbr', 'LocationName', 'FIPS', 'urban_rural_code'
+    # stip 'County' from 'County name'
+    urban_rural_data <- urban_rural_data %>%
+        select(`State Abr.` = 'State Abr.', `County name` = 'County name', `FIPS code` = 'FIPS code', `2013 code` = '2013 code') %>%
+        rename(StateAbbr = `State Abr.`, LocationName = `County name`, FIPS = `FIPS code`, urban_rural_code = `2013 code`) %>%
+        mutate(LocationName = gsub(' County', '', LocationName))
+
+    # transform FIPS column
+    # if length of FIPS is less than 5, add leading zeros
+    urban_rural_data$FIPS <- sprintf('%05d', urban_rural_data$FIPS)
+
+    # create a new column 'urban_rural_classification' based on 'urban_rural_code'
+    # 1 - "Large central metro", 2 - "Large fringe metro", 3 - "Medium metro", 4 - "Small metro", 5 - "Micropolitan", 6 - "Noncore"
+    urban_rural_data$urban_rural_classification <- case_when(
+        urban_rural_data$urban_rural_code == 1 ~ 'Large central metro',
+        urban_rural_data$urban_rural_code == 2 ~ 'Large fringe metro',
+        urban_rural_data$urban_rural_code == 3 ~ 'Medium metro',
+        urban_rural_data$urban_rural_code == 4 ~ 'Small metro',
+        urban_rural_data$urban_rural_code == 5 ~ 'Micropolitan',
+        urban_rural_data$urban_rural_code == 6 ~ 'Noncore'
+    )
+
+    head(urban_rural_data)
+
+    # join urban_rural_data with key_cols and get the urban_rural_classification
+    # join on 'FIPS' in urban_rural_data and 'CountyFIPS' in key_cols
+    county_data <- places_county_2023[ , key_cols] %>%
+        distinct() %>%
+        left_join(urban_rural_data, by = c('CountyFIPS' = 'FIPS'))
+
+    # display the county data
+    head(county_data)
+
+    # get missing values (as %) in urban_rural_classification
+    missing_values <- sum(is.na(county_data$urban_rural_classification)) / nrow(county_data) * 100
+    missing_values
+
+    # group by urban_rural_classification and get the count
+    urban_rural_count <- county_data %>%
+        group_by(urban_rural_classification) %>%
+        summarise(count = n())
+
+    # display the urban_rural_count
+    urban_rural_count
+```
+

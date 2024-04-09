@@ -1,0 +1,136 @@
+---
+title: "Chronic Disease Mortality - Predictive Modeling"
+author: "Chetan, Augustine"
+output: 
+  html_document:
+    keep_md: true
+    df_print: paged
+---
+    
+    ```{r setup, include=FALSE}
+       knitr::opts_chunk$set(echo = TRUE)
+    ```
+
+# Introduction
+Using CDC's Chronic Disease Indicators dataset, we are interested in analyzing if higher prevalence of preventive care leads to lower chronic disease mortality rate. 
+We will use predictive modeling to analyze the relationship between chronic disease mortality rate and prevalence of preventive care.
+
+These are datasets we are using for our analysis:
+1. CDC Chronic Disease Indicators (CDI) - https://www.cdc.gov/cdi/
+2. PLACES: Local Data for Better Health - https://www.cdc.gov/places/index.html
+
+# Research Question
+**What is the relationship between chronic disease mortality rate and prevalence of preventive care?**
+
+# Hypothesis
+We hypothesize that low prevalence of preventive care leads to higher chronic disease mortality rate.
+
+Null Hypothesis: There is no relationship between chronic disease mortality rate and prevalence of preventive care.
+
+# Methodology
+We will use predictive modeling to analyze the relationship between chronic disease mortality rate and prevalence of preventive care. We will use the following steps:
+1. Mortality Rate Data: Extract mortality rate data from CDC Chronic Disease Indicators dataset.
+2. Prevalence of Preventive Care Data: Extract prevalence of preventive care data from PLACES dataset.
+3. Data Preprocessing: Check for missing values, data types, and unique values in the datasets.
+4. Data Analysis: Analyze the relationship between chronic disease mortality rate and prevalence of preventive care.
+5. Predictive Modeling: Use machine learning algorithms to predict chronic disease mortality rate based on prevalence of preventive care.
+6. Model Evaluation: Evaluate the performance of the predictive models using metrics like RMSE, MAE, and R-squared.
+7. Conclusion: Draw conclusions based on the predictive modeling results.
+
+# Data
+```{r data, echo=TRUE}
+library(readr)
+library(dplyr)
+
+# # Load the data for mortality rate from chronic diseases
+# cdi_dataset <- read.csv("us_cdi_dataset.csv", stringsAsFactors = FALSE)
+
+# # above dataset is downloaded from here: https://data.cdc.gov/Chronic-Disease-Indicators/U-S-Chronic-Disease-Indicators/hksd-2xuw/about_data
+# # it's about 400MB in size, so I am not uploading it to the repository
+
+# # From this dataset, we are only interested in extracting mortality rate for chronic diseases
+
+# mortality_data <- cdi_dataset %>% 
+#   filter(grepl("mortality", Question, ignore.case = TRUE)) %>%
+#     filter(DataValueType == "Age-adjusted Rate") %>%
+#         select(Topic, Question, DataValueType, DataValueUnit, StratificationCategory1, Stratification1, 
+#           DataValue, DataSource, LocationDesc, LocationAbbr, GeoLocation, LocationID, YearStart, YearEnd)
+
+# # number of rows and columns
+# dim(mortality_data)
+
+# head(mortality_data)
+
+# # lets write this data to a csv file (we will use this data for our analysis)
+# write.csv(mortality_data, "mortality_data.csv", row.names = TRUE)
+
+# # Load the data for prevalence of preventive care
+# places_dataset <- read.csv("PLACES__Local_Data_for_Better_Health__Place_Data_2023_release_20240314.csv", stringsAsFactors = FALSE)
+
+# # above dataset is downloaded from here: https://data.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Place-Data-202/eav7-hnsx/about_data
+# # it's about 500MB in size, so I am not uploading it to the repository
+
+# # From this dataset, we are only interested in extracting prevalence of preventive care
+# # Category = Prevention and Data_Value_Type = Age-adjusted prevalence
+
+# preventive_care_data <- places_dataset %>% 
+#   filter(Category == "Prevention") %>%
+#     filter(Data_Value_Type == "Age-adjusted prevalence") %>%
+#         select(Category, Short_Question_Text, Measure, Data_Value_Type, 
+#             Data_Value_Unit, Data_Value, StateDesc, StateAbbr, Geolocation, LocationID, Year)
+
+# # number of rows and columns
+# dim(preventive_care_data)
+
+# head(preventive_care_data)
+
+# # lets write this data to a csv file (we will use this data for our analysis)
+# write.csv(preventive_care_data, "preventive_care_data.csv", row.names = TRUE)
+```
+
+# Data Preprocessing
+```{r data_preprocessing, echo=TRUE}
+# mortality data
+# Load the data (row names are included in the dataset)
+mortality_data <- read.csv("mortality_data.csv", stringsAsFactors = FALSE, row.names = 1)
+# mortality_data <- as.data.frame(mortality_data)
+head(mortality_data)
+
+# Number of rows and columns
+dim(mortality_data)
+
+# Check for missing values
+missing_values <- mortality_data %>% 
+  summarise_all(funs(sum(is.na(.))))
+missing_values
+
+# What's the percentage of missing values?
+missing_values_percentage <- missing_values / nrow(mortality_data) * 100
+missing_values_percentage
+
+# preventive care data
+# Load the data (row names are included in the dataset)
+preventive_care_data <- read.csv("preventive_care_data.csv", stringsAsFactors = FALSE, row.names = 1)
+# preventive_care_data <- as.data.frame(preventive_care_data)
+head(preventive_care_data)
+
+# Number of rows and columns
+dim(preventive_care_data)
+
+# Check for missing values
+missing_values <- preventive_care_data %>% 
+  summarise_all(funs(sum(is.na(.))))
+missing_values
+
+# What's the percentage of missing values?
+missing_values_percentage <- missing_values / nrow(preventive_care_data) * 100
+missing_values_percentage
+
+# unique values for Topic and Question in mortality data
+unique(mortality_data$Topic)
+# unique(mortality_data$Question)
+
+# unique values for Short_Question_Text and Measure in preventive care data
+unique(preventive_care_data$Short_Question_Text)
+# unique(preventive_care_data$Measure)
+```

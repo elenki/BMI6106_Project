@@ -1,0 +1,398 @@
+---
+title: "Preventive Health Measures and Chronic Disease Prevalence in the United States"
+author: "Augustine Takyi and Chetan Elenki"
+output: 
+    html_document:
+        theme: paper
+        highlight: breeze
+        code_folding: show
+        fig_caption: true
+        toc: true
+        toc_depth: 3
+        toc_float: true
+        number_sections: true
+        fig_width: 8
+        fig_height: 6
+        fig_align: "center"
+        df_print: paged
+        keep_md: true
+---
+
+# Introduction
+The United States has a high prevalence of chronic diseases such as heart disease, cancer, and diabetes. 
+These diseases are the leading causes of death and disability in the United States. 
+The Centers for Disease Control and Prevention (CDC) estimates that chronic diseases account for 7 out of 10 deaths in the United States. 
+The CDC also estimates that chronic diseases are responsible for 86% of the nation's healthcare costs. 
+The prevalence of chronic diseases in the United States is a major public health concern.
+
+Preventive health measures such as vaccinations, screenings, and lifestyle changes can help reduce the risk of chronic diseases.
+The CDC recommends that individuals receive vaccinations, screenings, and make lifestyle changes to reduce their risk of chronic diseases.
+However, many individuals in the United States do not receive preventive health measures.
+
+The purpose of this analysis is to examine the prevalence of chronic diseases in the United States in light of preventive health measures.
+We will analyze the prevalence of chronic diseases in the United States and the use of preventive health measures.
+We will also examine the relationship between chronic diseases and preventive health measures.
+
+# Data
+## About the data source
+For this analysis, we will use PLACES: Local Data for Better Health, Place Data 2023 release.
+Here's a brief description of the dataset (as provided by the CDC, source cited below):
+
+* This dataset contains model-based county estimates. 
+* PLACES covers the entire United States—50 states and the District of Columbia—at county, place, census tract, and ZIP Code Tabulation Area levels. 
+* It provides information uniformly on this large scale for local areas at four geographic levels. 
+* Estimates were provided by the Centers for Disease Control and Prevention (CDC), Division of Population Health, Epidemiology and Surveillance Branch. 
+* PLACES was funded by the Robert Wood Johnson Foundation in conjunction with the CDC Foundation. 
+
+* This dataset includes estimates for 36 measures: 
+    * 13 for health outcomes, 
+    * 10 for preventive services use, 
+    * 4 for chronic disease-related health risk behaviors, 
+    * 7 for disabilities, and 3 for health status. 
+
+* Data sources used to generate these model-based estimates are:
+    * Behavioral Risk Factor Surveillance System (BRFSS) 2021 or 2020 data, 
+    * Census Bureau 2021 or 2020 county population estimate data, and 
+    * American Community Survey 2017–2021, or 2016–2020 estimates. 
+
+* The 2023 release uses 2021 BRFSS data for 29 measures and 2020 BRFSS data for 7 measures 
+    (all teeth lost, dental visits, mammograms, cervical cancer screening, colorectal cancer screening, core preventive services among older adults, and sleeping less than 7 hours) 
+    that the survey collects data on every other year. 
+
+* More information about the methodology can be found at www.cdc.gov/places.
+
+**Source:** 
+    
+* https://data.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Place-Data-202/eav7-hnsx/about_data
+
+* Further information about the dataset can be found here: https://www.cdc.gov/places/about/index.html
+
+
+## Quick glimpse into the data
+Lets start by loading the data and examining the first few rows.
+
+```{r load_data, message=FALSE, warning=FALSE}
+    # loading data
+    library(readr)
+
+    # google drive location of the files
+    prevalence_raw_url <- 'https://drive.google.com/file/d/1YPqH7BBPuoZjumdfMnqw-O82HZLoxq1t/view?usp=sharing'
+
+    # define a function to read the data
+    read_data <- function(url){
+    # extract file id from the url
+    file_id <- strsplit(url, '/')[[1]][6]
+    
+    # create a read path
+    read_path <- paste0('https://drive.usercontent.google.com/download?id=', file_id, '&export=download&authuser=0&confirm=t')
+    
+    # read the data
+    df <- read_csv(read_path)
+    return(df)
+    }
+
+    # read the data
+    prevalence <- read_data(prevalence_raw_url)
+
+    # display the first few rows
+    head(prevalence)
+```
+
+### Features in the dataset
+The dataset contains the following columns:
+```{r column_names, message=FALSE, warning=FALSE}
+    # display the column names
+    colnames(prevalence)
+```
+
+Some basic data type conversions, before we proceed with the analysis:
+```{r data_type_conversion, message=FALSE, warning=FALSE}
+    library(dplyr)
+
+    # convert the Year column to integer
+    prevalence$Year <- as.integer(prevalence$Year)
+
+    # convert the Data_Value column to numeric
+    prevalence$Data_Value <- as.numeric(prevalence$Data_Value)
+
+    # convert LocationID to double
+    prevalence$LocationID <- as.double(prevalence$LocationID)
+```
+
+### Features of interest
+#### Health outcomes
+Let's examine the 13 health outcomes:
+```{r health_outcomes, message=FALSE, warning=FALSE}
+    library(dplyr)
+
+    # filter the health outcomes
+    health_outcomes <- prevalence %>% 
+        filter(Category == 'Health Outcomes') %>%
+        select(Year, Short_Question_Text, Measure) %>%
+        distinct()
+
+    # display the health outcomes
+    health_outcomes
+```
+As we can see all the health outcomes are measures from 2021, except for the measure 'All Teeth Lost' which is from 2020.
+So we will filter out the 'All Teeth Lost' measure from the health outcomes.
+
+```{r health_outcomes_filtered, message=FALSE, warning=FALSE}
+    # filter the health outcomes
+    health_outcomes_filtered <- health_outcomes %>% 
+        filter(Short_Question_Text != 'All Teeth Lost')
+```
+
+Quick check for missing values in the health outcomes:
+```{r missing_health_outcomes, message=FALSE, warning=FALSE}
+    # check for missing values in health outcomes
+    missing_health_outcomes <- health_outcomes_filtered %>% 
+        summarise_all(~sum(is.na(.)))
+
+    # display the missing values
+    missing_health_outcomes
+```
+Looks like there are no missing values in the health outcomes.
+
+
+#### Preventive services
+And, here are the 10 preventive services use measures:
+```{r preventive_services, message=FALSE, warning=FALSE}
+    # filter the preventive services
+    preventive_services <- prevalence %>% 
+        filter(Category == 'Prevention') %>%
+        select(Year, Short_Question_Text, Measure) %>%
+        distinct()
+
+    # display the preventive services
+    preventive_services
+```
+Similar to the health outcomes, we will filter out the preventive services measures from 2020.
+
+```{r preventive_services_filtered, message=FALSE, warning=FALSE}
+    # filter the preventive services
+    preventive_services_filtered <- preventive_services %>% 
+        filter(Year == 2021)
+```
+
+Quick check for missing values in the preventive services:
+```{r missing_preventive_services, message=FALSE, warning=FALSE}
+    # check for missing values in preventive services
+    missing_preventive_services <- preventive_services_filtered %>% 
+        summarise_all(~sum(is.na(.)))
+
+    # display the missing values
+    missing_preventive_services
+```
+Looks like there are no missing values in the preventive services.
+
+
+### Data Granularity
+Each of these measures is estimated at the county level.
+
+Here's number of counties (LocationName) and their total population (TotalPopulation) by state (StateDesc) in the dataset:
+```{r counties_by_state, message=FALSE, warning=FALSE}
+    # count of counties, sum of total population by state
+    counties_by_state <- prevalence %>% 
+        select(StateDesc, LocationName, TotalPopulation) %>%
+        distinct() %>%
+        group_by(StateDesc) %>%
+        summarise(Counties = n_distinct(LocationName), TotalPopulation = sum(TotalPopulation)) %>%
+        arrange(desc(TotalPopulation))
+
+    # display the counties by state
+    counties_by_state
+```
+
+### Types of measures
+Each measure is represented in the dataset by 3 different types (Data_Value_Type):
+```{r data_value_types, message=FALSE, warning=FALSE}
+    # count of data value types
+    data_value_types <- prevalence %>% 
+        group_by(Data_Value_Type) %>%
+        summarise(Count = n_distinct(Measure)) %>%
+        arrange(desc(Count))
+
+    # display the data value types
+    data_value_types
+```
+We will be using the 'Age-adjusted prevalence' for our analysis.
+
+### Data Value Units
+Here's the distribution of data value units:
+```{r data_value_units, message=FALSE, warning=FALSE}
+    # count of data value units
+    data_value_units <- prevalence %>% 
+        group_by(Data_Value_Unit) %>%
+        summarise(Count = n_distinct(Measure)) %>%
+        arrange(desc(Count))
+
+    # display the data value units
+    data_value_units
+```
+It appears that the data value unit is 'Percent' for all the measures.
+This is great as it will allow us to compare the measures directly.
+
+## Preparing dataset for our analysis
+For the purpose of our analysis, we will create a few component datasets:
+1. Measures
+2. Counties
+3. Health outcomes
+4. Preventive services
+
+We analyze these datasets to understand the data and check for missing values.
+Once we are satisfied with the data, we will combine these datasets and transform the data in the right shape for our analysis.
+We will also save the prepared dataset on Google Drive for future use.
+
+
+### Measures
+```{r measures_data, message=FALSE, warning=FALSE}
+    # filter the measures
+    # we will use the 'Age-adjusted prevalence' data value type
+    # and Year = 2021
+    measures_data <- prevalence %>% 
+        filter(Year == 2021) %>%
+        filter(Data_Value_Type == 'Age-adjusted prevalence') %>%
+        select(Year, Category, Short_Question_Text, Measure, Data_Value_Type, Data_Value_Unit) %>%
+        distinct()
+
+    # display measures
+    measures_data
+```
+
+### Counties
+```{r counties_data, message=FALSE, warning=FALSE}
+    # filter the counties
+    counties_data <- prevalence %>% 
+        select(LocationID, LocationName, StateDesc, StateAbbr, TotalPopulation, Geolocation) %>%
+        distinct()
+
+    # load urban rural classification data
+    urban_rural_url <- 'https://drive.google.com/file/d/1-w2AvZj4_sqEzMMS-NCPsILAZzKPaVvE/view?usp=sharing'
+    urban_rural_data <- read_data(urban_rural_url)
+    head(urban_rural_data)
+
+    # select the required columns
+    # 'State Abr.', 'County name', 'FIPS code', '2013 code'
+    # rename to: 'StateAbbr', 'LocationName', 'FIPS', 'urban_rural_code'
+    # stip 'County' from 'County name'
+    urban_rural_data <- urban_rural_data %>%
+        select(`State Abr.` = 'State Abr.', `County name` = 'County name', `FIPS code` = 'FIPS code', `2013 code` = '2013 code') %>%
+        rename(StateAbbr = `State Abr.`, LocationName = `County name`, FIPS = `FIPS code`, urban_rural_code = `2013 code`) %>%
+        mutate(LocationName = gsub(' County', '', LocationName))
+    head(urban_rural_data)
+
+    # merge the counties data with urban rural classification
+    # join based on LocationID in counties_data and FIPS in urban_rural_data
+    counties_data$LocationID <- as.numeric(counties_data$LocationID)
+    counties_data <- counties_data %>%
+        left_join(urban_rural_data, by = c('LocationID' = 'FIPS'))
+
+    # create a new column 'urban_rural_classification' based on 'urban_rural_code'
+    # 1 - "Large central metro", 2 - "Large fringe metro", 3 - "Medium metro", 4 - "Small metro", 5 - "Micropolitan", 6 - "Noncore"
+    counties_data <- counties_data %>%
+        mutate(urban_rural_classification = case_when(
+            urban_rural_code == 1 ~ "Large central metro",
+            urban_rural_code == 2 ~ "Large fringe metro",
+            urban_rural_code == 3 ~ "Medium metro",
+            urban_rural_code == 4 ~ "Small metro",
+            urban_rural_code == 5 ~ "Micropolitan",
+            urban_rural_code == 6 ~ "Noncore",
+            TRUE ~ "Unknown"
+        ))
+    
+    # display the missing values
+    missing_counties <- counties_data %>%
+        filter(is.na(urban_rural_code))
+
+    # display the missing counties
+    head(missing_counties)
+```
+
+
+### Health outcomes
+Let's prepare the health outcomes dataset and take a quick look at few rows.
+```{r health_outcomes_data_1, message=FALSE, warning=FALSE}
+    library(tidyr)
+
+    # filter the health outcomes
+    health_outcomes_data <- prevalence %>% 
+        filter(Category == 'Health Outcomes') %>%
+        filter(Short_Question_Text != 'All Teeth Lost') %>%
+        filter(Data_Value_Type == 'Age-adjusted prevalence') %>%
+        select(Year, LocationID, Short_Question_Text, Data_Value)
+
+    # few rows of health outcomes
+    head(health_outcomes_data)    
+```
+
+Now let's check for missing values in the health outcomes:
+```{r health_outcomes_data_2, message=FALSE, warning=FALSE}
+    # pivot the data
+    health_outcomes_data <- spread(health_outcomes_data, key = Short_Question_Text, value = Data_Value)
+
+    # plot the missing values
+    library(naniar)
+    gg_miss_upset(health_outcomes_data)
+```
+As we can see from the plot, the number of missing values is very low and we can safely ignore them.
+```{r health_outcomes_data_3, message=FALSE, warning=FALSE}
+    # remove missing values
+    health_outcomes_data <- health_outcomes_data %>% 
+        drop_na()
+```
+
+### Preventive services
+Let's prepare the preventive services dataset and check for missing values:
+```{r preventive_services_data_1, message=FALSE, warning=FALSE}
+    # filter the preventive services
+    # filter for Short_Question_Text in Annual Checkup, Cholesterol Screening, Health Insurance, Taking BP Medication
+    preventive_services_data <- prevalence %>% 
+        filter(Category == 'Prevention') %>%
+        filter(Short_Question_Text %in% c('Annual Checkup', 'Cholesterol Screening', 'Health Insurance', 'Taking BP Medication')) %>%
+        filter(Data_Value_Type == 'Age-adjusted prevalence') %>%
+        select(Year, LocationID, Short_Question_Text, Data_Value)
+
+    # few rows of preventive services
+    head(preventive_services_data)
+```
+
+Check for missing values in the preventive services:
+```{r preventive_services_data_2, message=FALSE, warning=FALSE}
+    # pivot the data
+    preventive_services_data <- spread(preventive_services_data, key = Short_Question_Text, value = Data_Value)
+
+    # plot the missing values
+    gg_miss_upset(preventive_services_data)
+```
+
+As we can see from the plot, the number of missing values is very low and we can safely ignore them.
+```{r preventive_services_data_3, message=FALSE, warning=FALSE}
+    # remove missing values
+    preventive_services_data <- preventive_services_data %>% 
+        drop_na()
+```
+
+### Combined dataset
+```{r combined_data, message=FALSE, warning=FALSE}
+    # combine the health outcomes and preventive services data
+    combined_data <- left_join(health_outcomes_data, preventive_services_data, by = c('Year', 'LocationID'))
+
+    # combine the combined data with the counties data
+    combined_data <- left_join(combined_data, counties_data, by = 'LocationID')
+
+    # display the first few rows
+    head(combined_data)
+```
+
+Check for missing values in the combined dataset:
+```{r missing_combined_data, message=FALSE, warning=FALSE}
+    # check for missing values in the combined data
+    missing_combined_data <- combined_data %>% 
+        summarise_all(~sum(is.na(.)))
+
+    # display the missing values
+    missing_combined_data
+```
+No missing values in the combined dataset.
+

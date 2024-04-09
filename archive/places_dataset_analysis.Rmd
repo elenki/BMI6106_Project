@@ -1,0 +1,56 @@
+---
+title: "PLACES dataset - Data Exploration and Cleaning"
+author: "Chetan, Augustine"
+output: 
+    html_document:
+        toc: true
+        toc_float: true
+        df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load_libraries}
+# Load the required libraries
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(readr)
+```
+
+```{r dataset}
+# Load the dataset
+places <- read_csv("PLACES__Local_Data_for_Better_Health__Place_Data_2023_release_20240314.csv")
+
+# Display rows for distinct Category, Short_Question_Text, Data_Value_Type and Data_Value_Unit
+places %>% 
+  select(Category, Short_Question_Text, Data_Value_Type, Data_Value_Unit) %>% 
+  distinct()
+```
+
+```{r data_exploration}
+# We are interested in exploring correlations between Health Outcomes and Health Risk Behaviors
+# Hypothesis: The incidence of heart disease is higher in states with a higher percentage of the population engaging in binge drinking.
+## we are interested if when Category is 'Health Outcomes' and Short_Question_Text is 'Binge Drinking' 
+## is associated with 'Chronic Kidney Disease'
+
+# Filter the dataset to include only the required columns
+places_filtered <- places %>% 
+  filter(Category %in% c("Health Outcomes", "Health Risk Behaviors") & 
+           Short_Question_Text %in% c("Binge Drinking", "Chronic Kidney Disease")) %>% 
+  select(Category, Short_Question_Text, Data_Value, Data_Value_Unit, Data_Value_Type, StateDesc)
+
+# group by Category, Short_Question_Text and Data_Value_Unit and calculate the mean of Data_Value
+places_filtered %>% 
+  group_by(Category, Short_Question_Text, Data_Value_Unit) %>% 
+  summarise(mean_data_value = mean(Data_Value, na.rm = TRUE))
+```
+
+```{r data_exploration2}
+# same as above, but add StateDesc to the group by clause
+places_filtered %>% 
+  group_by(Category, Short_Question_Text, Data_Value_Unit, StateDesc) %>% 
+  summarise(mean_data_value = mean(Data_Value, na.rm = TRUE))
+```
