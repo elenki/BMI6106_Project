@@ -19,7 +19,57 @@ output:
         keep_md: true
 ---
 
-# Loading the data
+# Introduction
+The United States has a high prevalence of chronic diseases such as heart disease, cancer, and diabetes. 
+These diseases are the leading causes of death and disability in the United States. 
+The Centers for Disease Control and Prevention (CDC) estimates that chronic diseases account for 7 out of 10 deaths in the United States. 
+The CDC also estimates that chronic diseases are responsible for 86% of the nation's healthcare costs. 
+The prevalence of chronic diseases in the United States is a major public health concern.
+
+The CDC's PLACES project provides county-level data on chronic disease prevalence, health outcomes, and health behaviors in the United States.
+The PLACES project aims to provide data that can be used to identify and address health disparities at the local level.
+The PLACES data can be used to identify areas with high rates of chronic diseases and to develop targeted interventions to improve health outcomes.
+
+In this analysis, we will use the PLACES: County Data, 2023 release to examine the prevalence of chronic diseases in the United States.
+We will analyze the prevalence of chronic diseases such as arthritis, high blood pressure, cancer, asthma, and diabetes.
+We will also examine other health outcomes, health behaviors, and social determinants of health in the United States.
+The goal of this analysis is to identify areas with high rates of chronic diseases and to explore the factors that contribute to these disparities.
+
+# Data Source Description
+For this analysis, we will use PLACES: Local Data for Better Health, Place Data 2023 release.
+Here's a brief description of the dataset (as provided by the CDC, source cited below):
+
+* This dataset contains model-based county estimates. 
+* PLACES covers the entire United States—50 states and the District of Columbia—at county, place, census tract, and ZIP Code Tabulation Area levels. 
+* It provides information uniformly on this large scale for local areas at four geographic levels. 
+* Estimates were provided by the Centers for Disease Control and Prevention (CDC), Division of Population Health, Epidemiology and Surveillance Branch. 
+* PLACES was funded by the Robert Wood Johnson Foundation in conjunction with the CDC Foundation. 
+
+* This dataset includes estimates for 36 measures: 
+    * 13 for health outcomes, 
+    * 10 for preventive services use, 
+    * 4 for chronic disease-related health risk behaviors, 
+    * 7 for disabilities, and 3 for health status. 
+
+* Data sources used to generate these model-based estimates are:
+    * Behavioral Risk Factor Surveillance System (BRFSS) 2021 or 2020 data, 
+    * Census Bureau 2021 or 2020 county population estimate data, and 
+    * American Community Survey 2017–2021, or 2016–2020 estimates. 
+
+* The 2023 release uses 2021 BRFSS data for 29 measures and 2020 BRFSS data for 7 measures 
+    (all teeth lost, dental visits, mammograms, cervical cancer screening, colorectal cancer screening, core preventive services among older adults, and sleeping less than 7 hours) 
+    that the survey collects data on every other year. 
+
+* More information about the methodology can be found at www.cdc.gov/places.
+
+**Source:** 
+    
+* https://data.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Place-Data-202/eav7-hnsx/about_data
+
+* Further information about the dataset can be found here: https://www.cdc.gov/places/about/index.html
+
+# Exploration and Data Preparation
+## Quick glimpse into the data
 Lets start by loading the data and examining the first few rows.
 
 ```r
@@ -117,464 +167,52 @@ The dataset contains the following columns:
 ## [154] "Geolocation"
 ```
 
-# Data Preparation
-We will create new datasets for our analysis by filtering the columns of interest.
+## Features in the dataset
+The dataset contains a wide range of features related to chronic diseases, health outcomes, health behaviors, and social determinants of health.
+Here are some of the key features in the dataset:
+
 
 ```r
-    # key columns
-    key_cols <- c('StateAbbr', 'StateDesc', 'CountyName', 'CountyFIPS', 'TotalPopulation', 'Geolocation')
-
-    
-    chronic_disease_cols <- c('ARTHRITIS_AdjPrev', 'BPHIGH_AdjPrev', 'CANCER_AdjPrev', 'CASTHMA_AdjPrev', 
-                                'CERVICAL_AdjPrev', 'CHD_AdjPrev', 'COPD_AdjPrev', 'DEPRESSION_AdjPrev', 
-                                'DIABETES_AdjPrev', 'KIDNEY_AdjPrev', 'STROKE_AdjPrev')
-
-    gen_health_cols <- c('GHLTH_AdjPrev', 'MHLTH_AdjPrev', 'PHLTH_AdjPrev')
-
-    risk_factors_cols <- c('HIGHCHOL_AdjPrev', 'OBESITY_AdjPrev')
-    disabilities_cols <- c('DISABILITY_AdjPrev', 'HEARING_AdjPrev', 'VISION_AdjPrev', 'COGNITION_AdjPrev', 'MOBILITY_AdjPrev', 'SELFCARE_AdjPrev', 'INDEPLIVE_AdjPrev')
-
-    negative_health_behavior_cols <- c('BINGE_AdjPrev', 'CSMOKING_AdjPrev')
-    positive_health_behavior_cols <- c('LPA_AdjPrev')
-    preventive_care_cols <- c('BPMED_AdjPrev', 'CHECKUP_AdjPrev', 'CHOLSCREEN_AdjPrev', 'COLON_SCREEN_AdjPrev')
-    sdoh_cols <- c('ACCESS2_AdjPrev')
-
-    # create the datasets
-    chronic_disease_data <- places_county_2023[, c(key_cols, chronic_disease_cols)]
-    gen_health_data <- places_county_2023[, c(key_cols, gen_health_cols)]
-    risk_factors_data <- places_county_2023[, c(key_cols, risk_factors_cols)]
-    disabilities_data <- places_county_2023[, c(key_cols, disabilities_cols)]
-    negative_health_behavior_data <- places_county_2023[, c(key_cols, negative_health_behavior_cols)]
-    positive_health_behavior_data <- places_county_2023[, c(key_cols, positive_health_behavior_cols)]
-    preventive_care_data <- places_county_2023[, c(key_cols, preventive_care_cols)]
-    sdoh_data <- places_county_2023[, c(key_cols, sdoh_cols)]
-
-    # display the first few rows of the datasets
-    head(chronic_disease_data)
-```
-
-<div data-pagedtable="false">
-  <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ARTHRITIS_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["BPHIGH_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["CANCER_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["CASTHMA_AdjPrev"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["CERVICAL_AdjPrev"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["CHD_AdjPrev"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["COPD_AdjPrev"],"name":[13],"type":["dbl"],"align":["right"]},{"label":["DEPRESSION_AdjPrev"],"name":[14],"type":["dbl"],"align":["right"]},{"label":["DIABETES_AdjPrev"],"name":[15],"type":["dbl"],"align":["right"]},{"label":["KIDNEY_AdjPrev"],"name":[16],"type":["dbl"],"align":["right"]},{"label":["STROKE_AdjPrev"],"name":[17],"type":["dbl"],"align":["right"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)","7":"28.2","8":"37.2","9":"6.3","10":"10.2","11":"84.3","12":"5.7","13":"6.8","14":"22.7","15":"10.7","16":"2.9","17":"3.0"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)","7":"30.0","8":"48.9","9":"5.5","10":"11.6","11":"82.9","12":"7.9","13":"9.8","14":"20.2","15":"18.7","16":"4.1","17":"5.1"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)","7":"29.0","8":"37.5","9":"6.3","10":"10.4","11":"81.6","12":"6.5","13":"8.3","14":"24.3","15":"11.5","16":"3.0","17":"3.3"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)","7":"28.7","8":"35.7","9":"6.4","10":"10.5","11":"82.4","12":"6.5","13":"8.5","14":"26.0","15":"11.0","16":"3.0","17":"3.2"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)","7":"30.2","8":"36.7","9":"6.3","10":"10.8","11":"80.0","12":"7.1","13":"9.5","14":"25.8","15":"12.5","16":"3.2","17":"3.5"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)","7":"28.9","8":"37.4","9":"6.3","10":"10.6","11":"82.0","12":"6.6","13":"8.6","14":"25.1","15":"11.5","16":"3.1","17":"3.4"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-
-```r
-    head(gen_health_data)
-```
-
-<div data-pagedtable="false">
-  <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]},{"label":["GHLTH_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["MHLTH_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["PHLTH_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)","7":"17.3","8":"18.0","9":"11.7"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)","7":"30.7","8":"20.5","9":"16.6"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)","7":"20.6","8":"19.7","9":"13.6"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)","7":"19.8","8":"19.9","9":"13.6"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)","7":"23.1","8":"20.7","9":"15.1"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)","7":"20.7","8":"20.1","9":"13.8"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-
-```r
-    head(risk_factors_data)
-```
-
-<div data-pagedtable="false">
-  <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]},{"label":["HIGHCHOL_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["OBESITY_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)","7":"32.1","8":"38.9"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)","7":"33.4","8":"48.9"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)","7":"33.8","8":"42.3"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)","7":"33.4","8":"36.1"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)","7":"34.5","8":"41.0"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)","7":"33.1","8":"38.7"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-
-```r
-    head(disabilities_data)
-```
-
-<div data-pagedtable="false">
-  <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]},{"label":["DISABILITY_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["HEARING_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["VISION_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["COGNITION_AdjPrev"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["MOBILITY_AdjPrev"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["SELFCARE_AdjPrev"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["INDEPLIVE_AdjPrev"],"name":[13],"type":["dbl"],"align":["right"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)","7":"30.2","8":"6.0","9":"4.7","10":"14.3","11":"14.7","12":"3.7","13":"8.2"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)","7":"41.9","8":"6.9","9":"10.4","10":"20.6","11":"23.9","12":"8.0","13":"14.1"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)","7":"35.4","8":"7.0","9":"5.7","10":"17.2","11":"17.3","12":"4.4","13":"9.9"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)","7":"34.5","8":"7.1","9":"5.3","10":"17.1","11":"16.6","12":"4.2","13":"9.7"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)","7":"37.5","8":"7.8","9":"6.7","10":"18.9","11":"19.0","12":"5.2","13":"11.1"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)","7":"34.8","8":"7.1","9":"5.7","10":"17.4","11":"17.2","12":"4.5","13":"10.0"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-
-```r
-    head(negative_health_behavior_data)
-```
-
-<div data-pagedtable="false">
-  <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]},{"label":["BINGE_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["CSMOKING_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)","7":"15.5","8":"16.9"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)","7":"12.4","8":"25.7"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)","7":"15.8","8":"21.7"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)","7":"15.9","8":"20.7"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)","7":"15.0","8":"22.2"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)","7":"15.6","8":"21.7"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-
-```r
-    head(positive_health_behavior_data)
-```
-
-<div data-pagedtable="false">
-  <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]},{"label":["LPA_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)","7":"29.1"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)","7":"43.6"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)","7":"34.1"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)","7":"32.2"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)","7":"35.0"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)","7":"34.6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-
-```r
-    head(preventive_care_data)
-```
-
-<div data-pagedtable="false">
-  <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]},{"label":["BPMED_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["CHECKUP_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["CHOLSCREEN_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["COLON_SCREEN_AdjPrev"],"name":[10],"type":["dbl"],"align":["right"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)","7":"65.3","8":"76.0","9":"85.1","10":"71.5"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)","7":"70.3","8":"78.2","9":"82.1","10":"69.7"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)","7":"64.4","8":"72.7","9":"83.0","10":"70.2"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)","7":"63.4","8":"73.7","9":"82.8","10":"70.5"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)","7":"64.4","8":"71.8","9":"81.7","10":"68.3"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)","7":"64.2","8":"74.0","9":"82.8","10":"71.1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-
-```r
-    head(sdoh_data)
-```
-
-<div data-pagedtable="false">
-  <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ACCESS2_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)","7":"10.4"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)","7":"19.2"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)","7":"14.1"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)","7":"12.5"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)","7":"16.7"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)","7":"12.9"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-
-# Descriptive Statistics
-We will now calculate the descriptive statistics for the datasets.
-
-```r
-    # function to calculate descriptive statistics
-    calculate_descriptive_statistics <- function(df){
-        # calculate the descriptive statistics
-        desc_stats <- summary(df)
-        return(desc_stats)
-    }
-
-    # calculate the descriptive statistics
-    chronic_disease_desc_stats <- calculate_descriptive_statistics(chronic_disease_data)
-    gen_health_desc_stats <- calculate_descriptive_statistics(gen_health_data)
-    risk_factors_desc_stats <- calculate_descriptive_statistics(risk_factors_data)
-    disabilities_desc_stats <- calculate_descriptive_statistics(disabilities_data)
-    negative_health_behavior_desc_stats <- calculate_descriptive_statistics(negative_health_behavior_data)
-    positive_health_behavior_desc_stats <- calculate_descriptive_statistics(positive_health_behavior_data)
-    preventive_care_desc_stats <- calculate_descriptive_statistics(preventive_care_data)
-    sdoh_desc_stats <- calculate_descriptive_statistics(sdoh_data)
-
-    # display the descriptive statistics
-    chronic_disease_desc_stats
-```
-
-```
-##   StateAbbr          StateDesc          CountyName         CountyFIPS       
-##  Length:3143        Length:3143        Length:3143        Length:3143       
-##  Class :character   Class :character   Class :character   Class :character  
-##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
-##                                                                             
-##                                                                             
-##                                                                             
-##                                                                             
-##  TotalPopulation   Geolocation        ARTHRITIS_AdjPrev BPHIGH_AdjPrev 
-##  Min.   :     57   Length:3143        Min.   :14.80     Min.   :21.30  
-##  1st Qu.:  10828   Class :character   1st Qu.:23.00     1st Qu.:29.10  
-##  Median :  25787   Mode  :character   Median :24.90     Median :32.00  
-##  Mean   : 105598                      Mean   :24.95     Mean   :32.67  
-##  3rd Qu.:  68524                      3rd Qu.:26.90     3rd Qu.:35.52  
-##  Max.   :9829544                      Max.   :34.60     Max.   :53.10  
-##                                       NA's   :67        NA's   :67     
-##  CANCER_AdjPrev  CASTHMA_AdjPrev CERVICAL_AdjPrev  CHD_AdjPrev    
-##  Min.   :3.900   Min.   : 6.70   Min.   :68.40    Min.   : 3.500  
-##  1st Qu.:6.100   1st Qu.: 9.80   1st Qu.:80.10    1st Qu.: 5.300  
-##  Median :6.300   Median :10.40   Median :81.80    Median : 5.800  
-##  Mean   :6.223   Mean   :10.38   Mean   :81.56    Mean   : 5.893  
-##  3rd Qu.:6.400   3rd Qu.:11.00   3rd Qu.:83.20    3rd Qu.: 6.400  
-##  Max.   :6.700   Max.   :14.00   Max.   :87.70    Max.   :11.200  
-##  NA's   :67      NA's   :67                       NA's   :67      
-##   COPD_AdjPrev    DEPRESSION_AdjPrev DIABETES_AdjPrev KIDNEY_AdjPrev 
-##  Min.   : 3.300   Min.   : 9.40      Min.   : 5.60    Min.   :2.000  
-##  1st Qu.: 6.000   1st Qu.:20.90      1st Qu.: 8.90    1st Qu.:2.700  
-##  Median : 7.000   Median :23.10      Median :10.20    Median :2.900  
-##  Mean   : 7.206   Mean   :23.04      Mean   :10.57    Mean   :2.944  
-##  3rd Qu.: 8.200   3rd Qu.:25.20      3rd Qu.:11.80    3rd Qu.:3.100  
-##  Max.   :15.800   Max.   :33.30      Max.   :22.20    Max.   :5.300  
-##  NA's   :67       NA's   :67         NA's   :67       NA's   :67     
-##  STROKE_AdjPrev 
-##  Min.   :1.800  
-##  1st Qu.:2.700  
-##  Median :3.000  
-##  Mean   :3.076  
-##  3rd Qu.:3.300  
-##  Max.   :6.700  
-##  NA's   :67
-```
-
-```r
-    gen_health_desc_stats
-```
-
-```
-##   StateAbbr          StateDesc          CountyName         CountyFIPS       
-##  Length:3143        Length:3143        Length:3143        Length:3143       
-##  Class :character   Class :character   Class :character   Class :character  
-##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
-##                                                                             
-##                                                                             
-##                                                                             
-##                                                                             
-##  TotalPopulation   Geolocation        GHLTH_AdjPrev   MHLTH_AdjPrev  
-##  Min.   :     57   Length:3143        Min.   : 8.40   Min.   : 9.80  
-##  1st Qu.:  10828   Class :character   1st Qu.:14.20   1st Qu.:15.70  
-##  Median :  25787   Mode  :character   Median :16.90   Median :17.10  
-##  Mean   : 105598                      Mean   :17.72   Mean   :17.15  
-##  3rd Qu.:  68524                      3rd Qu.:20.80   3rd Qu.:18.60  
-##  Max.   :9829544                      Max.   :38.00   Max.   :24.70  
-##                                       NA's   :67      NA's   :67     
-##  PHLTH_AdjPrev  
-##  Min.   : 6.60  
-##  1st Qu.:10.40  
-##  Median :11.90  
-##  Mean   :12.03  
-##  3rd Qu.:13.50  
-##  Max.   :23.30  
-##  NA's   :67
-```
-
-```r
-    risk_factors_desc_stats
-```
-
-```
-##   StateAbbr          StateDesc          CountyName         CountyFIPS       
-##  Length:3143        Length:3143        Length:3143        Length:3143       
-##  Class :character   Class :character   Class :character   Class :character  
-##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
-##                                                                             
-##                                                                             
-##                                                                             
-##                                                                             
-##  TotalPopulation   Geolocation        HIGHCHOL_AdjPrev OBESITY_AdjPrev
-##  Min.   :     57   Length:3143        Min.   :23.60    Min.   :17.40  
-##  1st Qu.:  10828   Class :character   1st Qu.:29.57    1st Qu.:35.20  
-##  Median :  25787   Mode  :character   Median :31.60    Median :37.70  
-##  Mean   : 105598                      Mean   :31.30    Mean   :37.42  
-##  3rd Qu.:  68524                      3rd Qu.:33.10    3rd Qu.:40.30  
-##  Max.   :9829544                      Max.   :37.10    Max.   :52.50  
-##                                       NA's   :67       NA's   :67
-```
-
-```r
-    disabilities_desc_stats
-```
-
-```
-##   StateAbbr          StateDesc          CountyName         CountyFIPS       
-##  Length:3143        Length:3143        Length:3143        Length:3143       
-##  Class :character   Class :character   Class :character   Class :character  
-##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
-##                                                                             
-##                                                                             
-##                                                                             
-##                                                                             
-##  TotalPopulation   Geolocation        DISABILITY_AdjPrev HEARING_AdjPrev 
-##  Min.   :     57   Length:3143        Min.   :16.60      Min.   : 4.000  
-##  1st Qu.:  10828   Class :character   1st Qu.:26.68      1st Qu.: 6.300  
-##  Median :  25787   Mode  :character   Median :30.70      Median : 7.000  
-##  Mean   : 105598                      Mean   :31.02      Mean   : 7.052  
-##  3rd Qu.:  68524                      3rd Qu.:35.00      3rd Qu.: 7.600  
-##  Max.   :9829544                      Max.   :52.70      Max.   :14.800  
-##                                       NA's   :67         NA's   :67      
-##  VISION_AdjPrev   COGNITION_AdjPrev MOBILITY_AdjPrev SELFCARE_AdjPrev
-##  Min.   : 2.200   Min.   : 7.40     Min.   : 6.50    Min.   : 1.600  
-##  1st Qu.: 4.100   1st Qu.:12.80     1st Qu.:11.30    1st Qu.: 3.200  
-##  Median : 4.900   Median :14.80     Median :13.60    Median : 3.700  
-##  Mean   : 5.299   Mean   :15.11     Mean   :13.97    Mean   : 4.002  
-##  3rd Qu.: 6.100   3rd Qu.:17.20     3rd Qu.:16.12    3rd Qu.: 4.600  
-##  Max.   :16.400   Max.   :28.40     Max.   :29.10    Max.   :11.700  
-##  NA's   :67       NA's   :67        NA's   :67       NA's   :67      
-##  INDEPLIVE_AdjPrev
-##  Min.   : 3.700   
-##  1st Qu.: 6.900   
-##  Median : 8.200   
-##  Mean   : 8.476   
-##  3rd Qu.: 9.700   
-##  Max.   :19.400   
-##  NA's   :67
-```
-
-```r
-    negative_health_behavior_desc_stats
-```
-
-```
-##   StateAbbr          StateDesc          CountyName         CountyFIPS       
-##  Length:3143        Length:3143        Length:3143        Length:3143       
-##  Class :character   Class :character   Class :character   Class :character  
-##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
-##                                                                             
-##                                                                             
-##                                                                             
-##                                                                             
-##  TotalPopulation   Geolocation        BINGE_AdjPrev   CSMOKING_AdjPrev
-##  Min.   :     57   Length:3143        Min.   : 8.10   Min.   : 7.0    
-##  1st Qu.:  10828   Class :character   1st Qu.:15.60   1st Qu.:16.4    
-##  Median :  25787   Mode  :character   Median :17.50   Median :18.7    
-##  Mean   : 105598                      Mean   :17.56   Mean   :19.0    
-##  3rd Qu.:  68524                      3rd Qu.:19.00   3rd Qu.:21.5    
-##  Max.   :9829544                      Max.   :26.20   Max.   :43.0    
-##                                       NA's   :67      NA's   :67
-```
-
-```r
-    positive_health_behavior_desc_stats
-```
-
-```
-##   StateAbbr          StateDesc          CountyName         CountyFIPS       
-##  Length:3143        Length:3143        Length:3143        Length:3143       
-##  Class :character   Class :character   Class :character   Class :character  
-##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
-##                                                                             
-##                                                                             
-##                                                                             
-##                                                                             
-##  TotalPopulation   Geolocation         LPA_AdjPrev   
-##  Min.   :     57   Length:3143        Min.   :12.00  
-##  1st Qu.:  10828   Class :character   1st Qu.:23.07  
-##  Median :  25787   Mode  :character   Median :26.30  
-##  Mean   : 105598                      Mean   :26.63  
-##  3rd Qu.:  68524                      3rd Qu.:30.10  
-##  Max.   :9829544                      Max.   :47.00  
-##                                       NA's   :67
-```
-
-```r
-    preventive_care_desc_stats
-```
-
-```
-##   StateAbbr          StateDesc          CountyName         CountyFIPS       
-##  Length:3143        Length:3143        Length:3143        Length:3143       
-##  Class :character   Class :character   Class :character   Class :character  
-##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
-##                                                                             
-##                                                                             
-##                                                                             
-##                                                                             
-##  TotalPopulation   Geolocation        BPMED_AdjPrev   CHECKUP_AdjPrev
-##  Min.   :     57   Length:3143        Min.   :46.90   Min.   :54.70  
-##  1st Qu.:  10828   Class :character   1st Qu.:58.30   1st Qu.:69.80  
-##  Median :  25787   Mode  :character   Median :60.50   Median :73.10  
-##  Mean   : 105598                      Mean   :60.22   Mean   :72.33  
-##  3rd Qu.:  68524                      3rd Qu.:62.40   3rd Qu.:75.50  
-##  Max.   :9829544                      Max.   :72.10   Max.   :82.50  
-##                                       NA's   :67      NA's   :67     
-##  CHOLSCREEN_AdjPrev COLON_SCREEN_AdjPrev
-##  Min.   :53.60      Min.   :49.00       
-##  1st Qu.:79.10      1st Qu.:64.80       
-##  Median :81.20      Median :68.10       
-##  Mean   :81.09      Mean   :67.73       
-##  3rd Qu.:83.30      3rd Qu.:71.30       
-##  Max.   :89.60      Max.   :82.10       
-##  NA's   :67
-```
-
-```r
-    sdoh_desc_stats
-```
-
-```
-##   StateAbbr          StateDesc          CountyName         CountyFIPS       
-##  Length:3143        Length:3143        Length:3143        Length:3143       
-##  Class :character   Class :character   Class :character   Class :character  
-##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
-##                                                                             
-##                                                                             
-##                                                                             
-##                                                                             
-##  TotalPopulation   Geolocation        ACCESS2_AdjPrev
-##  Min.   :     57   Length:3143        Min.   : 3.70  
-##  1st Qu.:  10828   Class :character   1st Qu.: 8.50  
-##  Median :  25787   Mode  :character   Median :10.65  
-##  Mean   : 105598                      Mean   :12.26  
-##  3rd Qu.:  68524                      3rd Qu.:14.40  
-##  Max.   :9829544                      Max.   :47.60  
-##                                       NA's   :67
-```
-
-# Data Visualization
-We will now visualize the data using bar plots.
-
-```r
-    # load the required libraries
-    library(ggplot2)
     library(dplyr)
     library(tidyr)
-
-    # function to create bar plots
-    create_bar_plot <- function(df, title){
-        # create a dataframe for plotting
-        df_plot <- df %>%
-            gather(key = 'variable', value = 'value', -c(key_cols)) %>%
-            mutate(variable = factor(variable, levels = colnames(df)[-(1:length(key_cols))]))
-        
-        # create the bar plot
-        p <- ggplot(df_plot, aes(x = variable, y = value)) +
-            geom_bar(stat = 'identity', fill = 'steelblue') +
-            theme_minimal() +
-            theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-            labs(title = title, x = 'Variable', y = 'Value')
-        
-        return(p)
-    }
-
-    # create the bar plots
-    chronic_disease_plot <- create_bar_plot(chronic_disease_data, 'Chronic Disease Data')
-    gen_health_plot <- create_bar_plot(gen_health_data, 'General Health Data')
-    risk_factors_plot <- create_bar_plot(risk_factors_data, 'Risk Factors Data')
-    disabilities_plot <- create_bar_plot(disabilities_data, 'Disabilities Data')
-    negative_health_behavior_plot <- create_bar_plot(negative_health_behavior_data, 'Negative Health Behavior Data')
-    positive_health_behavior_plot <- create_bar_plot(positive_health_behavior_data, 'Positive Health Behavior Data')
-    preventive_care_plot <- create_bar_plot(preventive_care_data, 'Preventive Care Data')
-    sdoh_plot <- create_bar_plot(sdoh_data, 'Social Determinants of Health Data')
-
-    # display the bar plots
-    print(chronic_disease_plot)
 ```
 
-![](BMI6106_Spring2024_Project_files/figure-html/data_visualization-1.png)<!-- -->
+### US Counties Data
+The dataset is at the county level and includes information about the state, county name, county FIPS code, total population, and geolocation.
+All observations in the dataset are identified by the following key columns:
 
 ```r
-    print(gen_health_plot)
+    key_cols <- c('StateAbbr', 'StateDesc', 'CountyName', 'CountyFIPS', 'TotalPopulation', 'Geolocation')
+    places_county_2023[key_cols] %>% head()
 ```
 
-![](BMI6106_Spring2024_Project_files/figure-html/data_visualization-2.png)<!-- -->
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+We will start by preparing counties dataset, as this is the granularity level for all our data.
 
 ```r
-    print(risk_factors_plot)
+    # using key_cols to filter the required columns
+    counties_data <- places_county_2023[key_cols] %>% distinct()
+
+    # check for missing values
+    missing_values <- sapply(counties_data, function(x) sum(is.na(x)))
+    missing_values
 ```
 
-![](BMI6106_Spring2024_Project_files/figure-html/data_visualization-3.png)<!-- -->
-
-```r
-    print(disabilities_plot)
 ```
-
-![](BMI6106_Spring2024_Project_files/figure-html/data_visualization-4.png)<!-- -->
-
-```r
-    print(negative_health_behavior_plot)
+##       StateAbbr       StateDesc      CountyName      CountyFIPS TotalPopulation 
+##               0               0               0               0               0 
+##     Geolocation 
+##               0
 ```
+As we can see, no missing values are present in the counties dataset.
 
-![](BMI6106_Spring2024_Project_files/figure-html/data_visualization-5.png)<!-- -->
-
-```r
-    print(positive_health_behavior_plot)
-```
-
-![](BMI6106_Spring2024_Project_files/figure-html/data_visualization-6.png)<!-- -->
-
-```r
-    print(preventive_care_plot)
-```
-
-![](BMI6106_Spring2024_Project_files/figure-html/data_visualization-7.png)<!-- -->
-
-```r
-    print(sdoh_plot)
-```
-
-![](BMI6106_Spring2024_Project_files/figure-html/data_visualization-8.png)<!-- -->
-
-# Enrich County Data
+For our analysis, we will enrich the counties dataset with additional information about the location type - whether it is a city, town, or rural area.
+This will be useful for understanding the context of the counties and their health outcomes.
 
 ```r
     # load urban rural classification data
@@ -617,33 +255,22 @@ We will now visualize the data using bar plots.
 ```r
     # join urban_rural_data with key_cols and get the urban_rural_classification
     # join on 'FIPS' in urban_rural_data and 'CountyFIPS' in key_cols
-    county_data <- places_county_2023[ , key_cols] %>%
-        distinct() %>%
-        left_join(urban_rural_data, by = c('CountyFIPS' = 'FIPS'))
+    enriched_county_data <- counties_data %>%
+        left_join(urban_rural_data %>% select(FIPS, urban_rural_code, urban_rural_classification), by = c('CountyFIPS' = 'FIPS'))
 
     # display the county data
-    head(county_data)
+    head(enriched_county_data)
 ```
 
 <div data-pagedtable="false">
   <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["StateAbbr.x"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]},{"label":["StateAbbr.y"],"name":[7],"type":["chr"],"align":["left"]},{"label":["LocationName"],"name":[8],"type":["chr"],"align":["left"]},{"label":["urban_rural_code"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["urban_rural_classification"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)","7":"AL","8":"Autauga","9":"3","10":"Medium metro"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)","7":"AL","8":"Bullock","9":"6","10":"Noncore"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)","7":"AL","8":"Chilton","9":"2","10":"Large fringe metro"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)","7":"AL","8":"Cleburne","9":"6","10":"Noncore"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)","7":"AL","8":"DeKalb","9":"6","10":"Noncore"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)","7":"AL","8":"Lamar","9":"6","10":"Noncore"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]},{"label":["urban_rural_code"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["urban_rural_classification"],"name":[8],"type":["chr"],"align":["left"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)","7":"3","8":"Medium metro"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)","7":"6","8":"Noncore"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)","7":"2","8":"Large fringe metro"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)","7":"6","8":"Noncore"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)","7":"6","8":"Noncore"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)","7":"6","8":"Noncore"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 
 ```r
-    # get missing values (as %) in urban_rural_classification
-    missing_values <- sum(is.na(county_data$urban_rural_classification)) / nrow(county_data) * 100
-    missing_values
-```
-
-```
-## [1] 0.06363347
-```
-
-```r
     # group by urban_rural_classification and get the count
-    urban_rural_count <- county_data %>%
+    urban_rural_count <- enriched_county_data %>%
         group_by(urban_rural_classification) %>%
         summarise(count = n())
 
@@ -654,6 +281,539 @@ We will now visualize the data using bar plots.
 <div data-pagedtable="false">
   <script data-pagedtable-source type="application/json">
 {"columns":[{"label":["urban_rural_classification"],"name":[1],"type":["chr"],"align":["left"]},{"label":["count"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"Large central metro","2":"68"},{"1":"Large fringe metro","2":"368"},{"1":"Medium metro","2":"372"},{"1":"Micropolitan","2":"641"},{"1":"Noncore","2":"1334"},{"1":"Small metro","2":"358"},{"1":"NA","2":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+```r
+    # display where urban_rural_classification is missing
+    missing_urban_rural <- enriched_county_data %>%
+        filter(is.na(urban_rural_classification))
+    missing_urban_rural
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]},{"label":["urban_rural_code"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["urban_rural_classification"],"name":[8],"type":["chr"],"align":["left"]}],"data":[{"1":"AK","2":"Alaska","3":"Copper River","4":"02066","5":"2630","6":"POINT (-143.9221674 62.034479)","7":"NA","8":"NA"},{"1":"AK","2":"Alaska","3":"Chugach","4":"02063","5":"6941","6":"POINT (-146.2030924 60.4884737)","7":"NA","8":"NA"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+```r
+    # the 2 counties we are missing urban_rural_classification for are: 'Copper River' and 'Chugach' counties both in Alaska
+    # we will manually set the urban_rural_code and urban_rural_classification for these counties
+    enriched_county_data <- enriched_county_data %>%
+        mutate(
+            urban_rural_code = case_when(
+                CountyName == 'Copper River' ~ 6,
+                CountyName == 'Chugach' ~ 6,
+                TRUE ~ urban_rural_code
+            ),
+            urban_rural_classification = case_when(
+                CountyName == 'Copper River' ~ 'Noncore',
+                CountyName == 'Chugach' ~ 'Noncore',
+                TRUE ~ urban_rural_classification
+            )
+        )
+
+    # check for missing values
+    missing_values <- sapply(enriched_county_data, function(x) sum(is.na(x)))
+    missing_values
+```
+
+```
+##                  StateAbbr                  StateDesc 
+##                          0                          0 
+##                 CountyName                 CountyFIPS 
+##                          0                          0 
+##            TotalPopulation                Geolocation 
+##                          0                          0 
+##           urban_rural_code urban_rural_classification 
+##                          0                          0
+```
+
+```r
+    # finally, for ease of joining with other datasets, we will create a LocationID column
+    # which is a combination of StateAbbr and CountyFIPS
+    enriched_county_data$LocationID <- paste(enriched_county_data$StateAbbr, enriched_county_data$CountyFIPS, sep = '_')
+
+    # urban_rural_code and urban_rural_classification are now available for all counties
+    # we can convert urban_rural_code to a factor for better analysis
+    enriched_county_data$urban_rural_code <- as.factor(enriched_county_data$urban_rural_code)
+    enriched_county_data$urban_rural_classification <- as.factor(enriched_county_data$urban_rural_classification)
+
+    # display the enriched county data
+    head(enriched_county_data)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]},{"label":["urban_rural_code"],"name":[7],"type":["fct"],"align":["left"]},{"label":["urban_rural_classification"],"name":[8],"type":["fct"],"align":["left"]},{"label":["LocationID"],"name":[9],"type":["chr"],"align":["left"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)","7":"3","8":"Medium metro","9":"AL_01001"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)","7":"6","8":"Noncore","9":"AL_01011"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)","7":"2","8":"Large fringe metro","9":"AL_01021"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)","7":"6","8":"Noncore","9":"AL_01029"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)","7":"6","8":"Noncore","9":"AL_01049"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)","7":"6","8":"Noncore","9":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+### Chronic Disease Data
+The dataset includes several features related to chronic diseases such as arthritis, high blood pressure, cancer, asthma, and diabetes.
+Here are some of the key features related to chronic diseases:
+
+```r
+    chronic_disease_cols <- c('ARTHRITIS_AdjPrev', 'BPHIGH_AdjPrev', 'CANCER_AdjPrev', 'CASTHMA_AdjPrev', 
+                                'CERVICAL_AdjPrev', 'CHD_AdjPrev', 'COPD_AdjPrev', 'DEPRESSION_AdjPrev', 
+                                'DIABETES_AdjPrev', 'KIDNEY_AdjPrev', 'STROKE_AdjPrev')
+    places_county_2023[chronic_disease_cols] %>% head()
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["ARTHRITIS_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["BPHIGH_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["CANCER_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["CASTHMA_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["CERVICAL_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["CHD_AdjPrev"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["COPD_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["DEPRESSION_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["DIABETES_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["KIDNEY_AdjPrev"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["STROKE_AdjPrev"],"name":[11],"type":["dbl"],"align":["right"]}],"data":[{"1":"28.2","2":"37.2","3":"6.3","4":"10.2","5":"84.3","6":"5.7","7":"6.8","8":"22.7","9":"10.7","10":"2.9","11":"3.0"},{"1":"30.0","2":"48.9","3":"5.5","4":"11.6","5":"82.9","6":"7.9","7":"9.8","8":"20.2","9":"18.7","10":"4.1","11":"5.1"},{"1":"29.0","2":"37.5","3":"6.3","4":"10.4","5":"81.6","6":"6.5","7":"8.3","8":"24.3","9":"11.5","10":"3.0","11":"3.3"},{"1":"28.7","2":"35.7","3":"6.4","4":"10.5","5":"82.4","6":"6.5","7":"8.5","8":"26.0","9":"11.0","10":"3.0","11":"3.2"},{"1":"30.2","2":"36.7","3":"6.3","4":"10.8","5":"80.0","6":"7.1","7":"9.5","8":"25.8","9":"12.5","10":"3.2","11":"3.5"},{"1":"28.9","2":"37.4","3":"6.3","4":"10.6","5":"82.0","6":"6.6","7":"8.6","8":"25.1","9":"11.5","10":"3.1","11":"3.4"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+Next, we will prepare the chronic disease data by filtering the required columns and handling missing values.
+
+```r
+    # for this dataset we will select the key_cols and chronic_disease_cols
+    chronic_disease_data <- places_county_2023[key_cols %>% union(chronic_disease_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    chronic_disease_data$LocationID <- paste(chronic_disease_data$StateAbbr, chronic_disease_data$CountyFIPS, sep = '_')
+    chronic_disease_data <- chronic_disease_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(chronic_disease_data, function(x) sum(is.na(x)))
+    missing_values
+```
+
+```
+##  ARTHRITIS_AdjPrev     BPHIGH_AdjPrev     CANCER_AdjPrev    CASTHMA_AdjPrev 
+##                 67                 67                 67                 67 
+##   CERVICAL_AdjPrev        CHD_AdjPrev       COPD_AdjPrev DEPRESSION_AdjPrev 
+##                  0                 67                 67                 67 
+##   DIABETES_AdjPrev     KIDNEY_AdjPrev     STROKE_AdjPrev         LocationID 
+##                 67                 67                 67                  0
+```
+
+```r
+    # as the number of missing values is small, we will drop the rows with missing values
+    chronic_disease_data <- chronic_disease_data %>% drop_na()
+
+    # display the chronic disease data
+    head(chronic_disease_data)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["ARTHRITIS_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["BPHIGH_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["CANCER_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["CASTHMA_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["CERVICAL_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["CHD_AdjPrev"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["COPD_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["DEPRESSION_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["DIABETES_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["KIDNEY_AdjPrev"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["STROKE_AdjPrev"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[12],"type":["chr"],"align":["left"]}],"data":[{"1":"28.2","2":"37.2","3":"6.3","4":"10.2","5":"84.3","6":"5.7","7":"6.8","8":"22.7","9":"10.7","10":"2.9","11":"3.0","12":"AL_01001"},{"1":"30.0","2":"48.9","3":"5.5","4":"11.6","5":"82.9","6":"7.9","7":"9.8","8":"20.2","9":"18.7","10":"4.1","11":"5.1","12":"AL_01011"},{"1":"29.0","2":"37.5","3":"6.3","4":"10.4","5":"81.6","6":"6.5","7":"8.3","8":"24.3","9":"11.5","10":"3.0","11":"3.3","12":"AL_01021"},{"1":"28.7","2":"35.7","3":"6.4","4":"10.5","5":"82.4","6":"6.5","7":"8.5","8":"26.0","9":"11.0","10":"3.0","11":"3.2","12":"AL_01029"},{"1":"30.2","2":"36.7","3":"6.3","4":"10.8","5":"80.0","6":"7.1","7":"9.5","8":"25.8","9":"12.5","10":"3.2","11":"3.5","12":"AL_01049"},{"1":"28.9","2":"37.4","3":"6.3","4":"10.6","5":"82.0","6":"6.6","7":"8.6","8":"25.1","9":"11.5","10":"3.1","11":"3.4","12":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+### Health Status Data
+The dataset also includes features related to general health status, mental health, and physical health.
+Here are some of the key features related to general health:
+
+```r
+    health_status_cols <- c('GHLTH_AdjPrev', 'MHLTH_AdjPrev', 'PHLTH_AdjPrev')
+    places_county_2023[health_status_cols] %>% head()
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["GHLTH_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["MHLTH_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["PHLTH_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"17.3","2":"18.0","3":"11.7"},{"1":"30.7","2":"20.5","3":"16.6"},{"1":"20.6","2":"19.7","3":"13.6"},{"1":"19.8","2":"19.9","3":"13.6"},{"1":"23.1","2":"20.7","3":"15.1"},{"1":"20.7","2":"20.1","3":"13.8"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+Next, we will prepare the health status data by filtering the required columns and handling missing values.
+
+```r
+    # for this dataset we will select the key_cols and health_status_cols
+    health_status_data <- places_county_2023[key_cols %>% union(health_status_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    health_status_data$LocationID <- paste(health_status_data$StateAbbr, health_status_data$CountyFIPS, sep = '_')
+    health_status_data <- health_status_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(health_status_data, function(x) sum(is.na(x)))
+    missing_values
+```
+
+```
+## GHLTH_AdjPrev MHLTH_AdjPrev PHLTH_AdjPrev    LocationID 
+##            67            67            67             0
+```
+
+```r
+    # as the number of missing values is small, we will drop the rows with missing values
+    health_status_data <- health_status_data %>% drop_na()
+
+    # display the health status data
+    head(health_status_data)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["GHLTH_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["MHLTH_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["PHLTH_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[4],"type":["chr"],"align":["left"]}],"data":[{"1":"17.3","2":"18.0","3":"11.7","4":"AL_01001"},{"1":"30.7","2":"20.5","3":"16.6","4":"AL_01011"},{"1":"20.6","2":"19.7","3":"13.6","4":"AL_01021"},{"1":"19.8","2":"19.9","3":"13.6","4":"AL_01029"},{"1":"23.1","2":"20.7","3":"15.1","4":"AL_01049"},{"1":"20.7","2":"20.1","3":"13.8","4":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+### Risk Factors Data
+The dataset includes features related to risk factors for chronic diseases such as high cholesterol and obesity.
+Here are some of the key features related to risk factors:
+
+```r
+    risk_factors_cols <- c('HIGHCHOL_AdjPrev', 'OBESITY_AdjPrev')
+    places_county_2023[risk_factors_cols] %>% head()
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["HIGHCHOL_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["OBESITY_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"32.1","2":"38.9"},{"1":"33.4","2":"48.9"},{"1":"33.8","2":"42.3"},{"1":"33.4","2":"36.1"},{"1":"34.5","2":"41.0"},{"1":"33.1","2":"38.7"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+Next, we will prepare the risk factors data by filtering the required columns and handling missing values.
+
+```r
+    # for this dataset we will select the key_cols and risk_factors_cols
+    risk_factors_data <- places_county_2023[key_cols %>% union(risk_factors_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    risk_factors_data$LocationID <- paste(risk_factors_data$StateAbbr, risk_factors_data$CountyFIPS, sep = '_')
+    risk_factors_data <- risk_factors_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(risk_factors_data, function(x) sum(is.na(x)))
+    missing_values
+```
+
+```
+## HIGHCHOL_AdjPrev  OBESITY_AdjPrev       LocationID 
+##               67               67                0
+```
+
+```r
+    # as the number of missing values is small, we will drop the rows with missing values
+    risk_factors_data <- risk_factors_data %>% drop_na()
+
+    # display the risk factors data
+    head(risk_factors_data)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["HIGHCHOL_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["OBESITY_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[3],"type":["chr"],"align":["left"]}],"data":[{"1":"32.1","2":"38.9","3":"AL_01001"},{"1":"33.4","2":"48.9","3":"AL_01011"},{"1":"33.8","2":"42.3","3":"AL_01021"},{"1":"33.4","2":"36.1","3":"AL_01029"},{"1":"34.5","2":"41.0","3":"AL_01049"},{"1":"33.1","2":"38.7","3":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+### Disabilities Data
+The dataset includes features related to disabilities such as disability status and disability prevalence.
+Here are some of the key features related to disabilities:
+
+```r
+    disabilities_cols <- c('DISABILITY_AdjPrev', 'HEARING_AdjPrev', 'VISION_AdjPrev', 'COGNITION_AdjPrev', 'MOBILITY_AdjPrev', 'SELFCARE_AdjPrev', 'INDEPLIVE_AdjPrev')
+    places_county_2023[disabilities_cols] %>% head()
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["DISABILITY_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["HEARING_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["VISION_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["COGNITION_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["MOBILITY_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["SELFCARE_AdjPrev"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["INDEPLIVE_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"30.2","2":"6.0","3":"4.7","4":"14.3","5":"14.7","6":"3.7","7":"8.2"},{"1":"41.9","2":"6.9","3":"10.4","4":"20.6","5":"23.9","6":"8.0","7":"14.1"},{"1":"35.4","2":"7.0","3":"5.7","4":"17.2","5":"17.3","6":"4.4","7":"9.9"},{"1":"34.5","2":"7.1","3":"5.3","4":"17.1","5":"16.6","6":"4.2","7":"9.7"},{"1":"37.5","2":"7.8","3":"6.7","4":"18.9","5":"19.0","6":"5.2","7":"11.1"},{"1":"34.8","2":"7.1","3":"5.7","4":"17.4","5":"17.2","6":"4.5","7":"10.0"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+Next, we will prepare the disabilities data by filtering the required columns and handling missing values.
+
+```r
+    # for this dataset we will select the key_cols and disabilities_cols
+    disabilities_data <- places_county_2023[key_cols %>% union(disabilities_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    disabilities_data$LocationID <- paste(disabilities_data$StateAbbr, disabilities_data$CountyFIPS, sep = '_')
+    disabilities_data <- disabilities_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(disabilities_data, function(x) sum(is.na(x)))
+    missing_values
+```
+
+```
+## DISABILITY_AdjPrev    HEARING_AdjPrev     VISION_AdjPrev  COGNITION_AdjPrev 
+##                 67                 67                 67                 67 
+##   MOBILITY_AdjPrev   SELFCARE_AdjPrev  INDEPLIVE_AdjPrev         LocationID 
+##                 67                 67                 67                  0
+```
+
+```r
+    # as the number of missing values is small, we will drop the rows with missing values
+    disabilities_data <- disabilities_data %>% drop_na()
+
+    # display the disabilities data
+    head(disabilities_data)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["DISABILITY_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["HEARING_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["VISION_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["COGNITION_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["MOBILITY_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["SELFCARE_AdjPrev"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["INDEPLIVE_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[8],"type":["chr"],"align":["left"]}],"data":[{"1":"30.2","2":"6.0","3":"4.7","4":"14.3","5":"14.7","6":"3.7","7":"8.2","8":"AL_01001"},{"1":"41.9","2":"6.9","3":"10.4","4":"20.6","5":"23.9","6":"8.0","7":"14.1","8":"AL_01011"},{"1":"35.4","2":"7.0","3":"5.7","4":"17.2","5":"17.3","6":"4.4","7":"9.9","8":"AL_01021"},{"1":"34.5","2":"7.1","3":"5.3","4":"17.1","5":"16.6","6":"4.2","7":"9.7","8":"AL_01029"},{"1":"37.5","2":"7.8","3":"6.7","4":"18.9","5":"19.0","6":"5.2","7":"11.1","8":"AL_01049"},{"1":"34.8","2":"7.1","3":"5.7","4":"17.4","5":"17.2","6":"4.5","7":"10.0","8":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+### Health Behaviors Data
+The dataset includes features related to health behaviors such as smoking, physical inactivity, and excessive drinking, which are negative health behaviors that can contribute to chronic diseases.
+
+```r
+    negative_health_behavior_cols <- c('BINGE_AdjPrev', 'CSMOKING_AdjPrev')
+    places_county_2023[negative_health_behavior_cols] %>% head()
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["BINGE_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["CSMOKING_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"15.5","2":"16.9"},{"1":"12.4","2":"25.7"},{"1":"15.8","2":"21.7"},{"1":"15.9","2":"20.7"},{"1":"15.0","2":"22.2"},{"1":"15.6","2":"21.7"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+The dataset also includes positive health behaviors such as physical activity.
+
+```r
+    positive_health_behavior_cols <- c('LPA_AdjPrev')
+    places_county_2023[positive_health_behavior_cols] %>% head()
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["LPA_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]}],"data":[{"1":"29.1"},{"1":"43.6"},{"1":"34.1"},{"1":"32.2"},{"1":"35.0"},{"1":"34.6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+Next, we will prepare the health behaviors data by filtering the required columns and handling missing values.
+
+```r
+    # negative_health_behavior_cols
+    # for this dataset we will select the key_cols and negative_health_behavior_cols
+    negative_health_behaviors_data <- places_county_2023[key_cols %>% union(negative_health_behavior_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    negative_health_behaviors_data$LocationID <- paste(negative_health_behaviors_data$StateAbbr, negative_health_behaviors_data$CountyFIPS, sep = '_')
+    negative_health_behaviors_data <- negative_health_behaviors_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(negative_health_behaviors_data, function(x) sum(is.na(x)))
+    missing_values
+```
+
+```
+##    BINGE_AdjPrev CSMOKING_AdjPrev       LocationID 
+##               67               67                0
+```
+
+```r
+    # as the number of missing values is small, we will drop the rows with missing values
+    negative_health_behaviors_data <- negative_health_behaviors_data %>% drop_na()
+
+    # display the negative health behaviors data
+    head(negative_health_behaviors_data)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["BINGE_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["CSMOKING_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[3],"type":["chr"],"align":["left"]}],"data":[{"1":"15.5","2":"16.9","3":"AL_01001"},{"1":"12.4","2":"25.7","3":"AL_01011"},{"1":"15.8","2":"21.7","3":"AL_01021"},{"1":"15.9","2":"20.7","3":"AL_01029"},{"1":"15.0","2":"22.2","3":"AL_01049"},{"1":"15.6","2":"21.7","3":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+```r
+    # positive_health_behavior_cols
+    # for this dataset we will select the key_cols and health_behaviors_cols
+    positive_health_behaviors_data <- places_county_2023[key_cols %>% union(positive_health_behavior_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    positive_health_behaviors_data$LocationID <- paste(positive_health_behaviors_data$StateAbbr, positive_health_behaviors_data$CountyFIPS, sep = '_')
+    positive_health_behaviors_data <- positive_health_behaviors_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(positive_health_behaviors_data, function(x) sum(is.na(x)))
+    missing_values
+```
+
+```
+## LPA_AdjPrev  LocationID 
+##          67           0
+```
+
+```r
+    # as the number of missing values is small, we will drop the rows with missing values
+    positive_health_behaviors_data <- positive_health_behaviors_data %>% drop_na()
+
+    # display the positive health behaviors data
+    head(positive_health_behaviors_data)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["LPA_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[2],"type":["chr"],"align":["left"]}],"data":[{"1":"29.1","2":"AL_01001"},{"1":"43.6","2":"AL_01011"},{"1":"34.1","2":"AL_01021"},{"1":"32.2","2":"AL_01029"},{"1":"35.0","2":"AL_01049"},{"1":"34.6","2":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+### Preventive Care Data
+The dataset includes features related to preventive care such as mammography screening, regular checkups, etc.
+
+```r
+    preventive_care_cols <- c('BPMED_AdjPrev', 'CHECKUP_AdjPrev', 'CHOLSCREEN_AdjPrev', 'COLON_SCREEN_AdjPrev')
+    places_county_2023[preventive_care_cols] %>% head()
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["BPMED_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["CHECKUP_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["CHOLSCREEN_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["COLON_SCREEN_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"65.3","2":"76.0","3":"85.1","4":"71.5"},{"1":"70.3","2":"78.2","3":"82.1","4":"69.7"},{"1":"64.4","2":"72.7","3":"83.0","4":"70.2"},{"1":"63.4","2":"73.7","3":"82.8","4":"70.5"},{"1":"64.4","2":"71.8","3":"81.7","4":"68.3"},{"1":"64.2","2":"74.0","3":"82.8","4":"71.1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+Next, we will prepare the preventive care data by filtering the required columns and handling missing values.
+
+```r
+    # for this dataset we will select the key_cols and preventive_care_cols
+    preventive_care_data <- places_county_2023[key_cols %>% union(preventive_care_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    preventive_care_data$LocationID <- paste(preventive_care_data$StateAbbr, preventive_care_data$CountyFIPS, sep = '_')
+    preventive_care_data <- preventive_care_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(preventive_care_data, function(x) sum(is.na(x)))
+    missing_values
+```
+
+```
+##        BPMED_AdjPrev      CHECKUP_AdjPrev   CHOLSCREEN_AdjPrev 
+##                   67                   67                   67 
+## COLON_SCREEN_AdjPrev           LocationID 
+##                    0                    0
+```
+
+```r
+    # as the number of missing values is small, we will drop the rows with missing values
+    preventive_care_data <- preventive_care_data %>% drop_na()
+
+    # display the preventive care data
+    head(preventive_care_data)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["BPMED_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["CHECKUP_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["CHOLSCREEN_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["COLON_SCREEN_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[5],"type":["chr"],"align":["left"]}],"data":[{"1":"65.3","2":"76.0","3":"85.1","4":"71.5","5":"AL_01001"},{"1":"70.3","2":"78.2","3":"82.1","4":"69.7","5":"AL_01011"},{"1":"64.4","2":"72.7","3":"83.0","4":"70.2","5":"AL_01021"},{"1":"63.4","2":"73.7","3":"82.8","4":"70.5","5":"AL_01029"},{"1":"64.4","2":"71.8","3":"81.7","4":"68.3","5":"AL_01049"},{"1":"64.2","2":"74.0","3":"82.8","4":"71.1","5":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+### Social Determinants Data
+We have only one feature related to social determinants of health in the dataset, which is access to health insurance.
+
+```r
+    sdoh_cols <- c('ACCESS2_AdjPrev')
+    places_county_2023[sdoh_cols] %>% head()
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["ACCESS2_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]}],"data":[{"1":"10.4"},{"1":"19.2"},{"1":"14.1"},{"1":"12.5"},{"1":"16.7"},{"1":"12.9"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+Next, we will prepare the social determinants data by filtering the required columns and handling missing values.
+
+```r
+    # for this dataset we will select the key_cols and sdoh_cols
+    social_determinants_data <- places_county_2023[key_cols %>% union(sdoh_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    social_determinants_data$LocationID <- paste(social_determinants_data$StateAbbr, social_determinants_data$CountyFIPS, sep = '_')
+    social_determinants_data <- social_determinants_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(social_determinants_data, function(x) sum(is.na(x)))
+    missing_values
+```
+
+```
+## ACCESS2_AdjPrev      LocationID 
+##              67               0
+```
+
+```r
+    # as the number of missing values is small, we will drop the rows with missing values
+    social_determinants_data <- social_determinants_data %>% drop_na()
+
+    # display the social determinants data
+    head(social_determinants_data)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["ACCESS2_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[2],"type":["chr"],"align":["left"]}],"data":[{"1":"10.4","2":"AL_01001"},{"1":"19.2","2":"AL_01011"},{"1":"14.1","2":"AL_01021"},{"1":"12.5","2":"AL_01029"},{"1":"16.7","2":"AL_01049"},{"1":"12.9","2":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+# Data Analysis
+For our analysis, we theorize that the age-adjusted prevalence of chronic diseases is influenced by:
+    * whether the county is urban or rural, 
+    * the prevalence of disabilities, 
+    * negative health behaviors, 
+    * positive health behaviors, 
+    * preventive care, 
+    * and social determinants of health. 
+
+We will analyze the relationship between these factors and the age-adjusted prevalence of chronic diseases.
+
+## Influence of the county type on the age-adjusted prevalence of chronic diseases
+We will analyze the influence of the county type (urban or rural) on the age-adjusted prevalence of chronic diseases.
+
+```r
+    # merge the chronic diseases data with the county type data
+    chronic_diseases_data <- merge(chronic_disease_data, enriched_county_data, by = 'LocationID')
+
+    # we will rename urban_rural_classification to urban_rural_sub_class
+    # and based on the values of urban_rural_code, we will create a new column urban_rural_classification as follows:
+    # 1 -> Urban, 2 -> Urban, 3 -> Urban, 4 -> Urban, 5 -> Rural, 6 -> Rural
+    chronic_diseases_data$urban_rural_sub_class <- chronic_diseases_data$urban_rural_classification
+    chronic_diseases_data$urban_rural_classification <- ifelse(chronic_diseases_data$urban_rural_code %in% c(1, 2, 3, 4), 'Urban', 'Rural')
+
+    # calculate the mean age-adjusted prevalence of chronic diseases (chronic_disease_cols) by urban_rural_classification
+    chronic_diseases_mean <- chronic_diseases_data %>% group_by(urban_rural_classification) %>% summarise(across(all_of(chronic_disease_cols), mean, na.rm = TRUE))
+
+    # display the mean age-adjusted prevalence of chronic diseases by urban_rural_classification
+    chronic_diseases_mean
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["urban_rural_classification"],"name":[1],"type":["chr"],"align":["left"]},{"label":["ARTHRITIS_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BPHIGH_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["CANCER_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["CASTHMA_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["CERVICAL_AdjPrev"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["CHD_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["COPD_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["DEPRESSION_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["DIABETES_AdjPrev"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["KIDNEY_AdjPrev"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["STROKE_AdjPrev"],"name":[12],"type":["dbl"],"align":["right"]}],"data":[{"1":"Rural","2":"25.26029","3":"33.11223","4":"6.236387","5":"10.44739","6":"81.07078","7":"6.107421","8":"7.561822","9":"23.17236","10":"10.81187","11":"2.998925","12":"3.173388"},{"1":"Urban","2":"24.40463","3":"31.89537","4":"6.201070","5":"10.25517","6":"82.52576","7":"5.518271","8":"6.586542","9":"22.81818","10":"10.13993","11":"2.848574","12":"2.905437"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+```r
+    # visualize the mean age-adjusted prevalence of chronic diseases by urban_rural_classification
+    # box plot for each chronic disease column by urban_rural_classification
+    library(ggplot2)
+    library(tidyr)
+
+    chronic_diseases_data_long <- chronic_diseases_data %>% pivot_longer(cols = chronic_disease_cols, names_to = 'ChronicDisease', values_to = 'AgeAdjustedPrevalence')
+
+    ggplot(chronic_diseases_data_long, aes(x = urban_rural_classification, y = AgeAdjustedPrevalence, fill = urban_rural_classification)) +
+        geom_boxplot() +
+        facet_wrap(~ChronicDisease, scales = 'free_y') +
+        labs(title = 'Mean Age-Adjusted Prevalence of Chronic Diseases by County Type', x = 'County Type', y = 'Age-Adjusted Prevalence') +
+        theme_minimal()
+```
+
+![](BMI6106_Spring2024_Project_files/figure-html/county_type_analysis-1.png)<!-- -->
+
+```r
+    # perform a t-test to determine if there is a significant difference in the age-adjusted prevalence of chronic diseases between urban and rural counties
+    t_test_results <- lapply(chronic_disease_cols, function(col) {
+        t_test <- t.test(chronic_diseases_data[[col]] ~ chronic_diseases_data$urban_rural_classification)
+        data.frame(ChronicDisease = col, p_value = t_test$p.value, mean_urban = t_test$estimate[1], mean_rural = t_test$estimate[2])
+    }) %>% bind_rows()
+
+    # display the t-test results
+    t_test_results
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["ChronicDisease"],"name":[1],"type":["chr"],"align":["left"]},{"label":["p_value"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mean_urban"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["mean_rural"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"ARTHRITIS_AdjPrev","2":"6.340180e-17","3":"25.260287","4":"24.404635","_rn_":"mean in group Rural...1"},{"1":"BPHIGH_AdjPrev","2":"8.620106e-13","3":"33.112231","4":"31.895365","_rn_":"mean in group Rural...2"},{"1":"CANCER_AdjPrev","2":"1.536628e-03","3":"6.236387","4":"6.201070","_rn_":"mean in group Rural...3"},{"1":"CASTHMA_AdjPrev","2":"4.050142e-09","3":"10.447390","4":"10.255169","_rn_":"mean in group Rural...4"},{"1":"CERVICAL_AdjPrev","2":"3.903770e-64","3":"81.070778","4":"82.525758","_rn_":"mean in group Rural...5"},{"1":"CHD_AdjPrev","2":"7.858001e-83","3":"6.107421","4":"5.518271","_rn_":"mean in group Rural...6"},{"1":"COPD_AdjPrev","2":"4.359327e-63","3":"7.561822","4":"6.586542","_rn_":"mean in group Rural...7"},{"1":"DEPRESSION_AdjPrev","2":"3.394998e-03","3":"23.172364","4":"22.818182","_rn_":"mean in group Rural...8"},{"1":"DIABETES_AdjPrev","2":"3.299947e-17","3":"10.811873","4":"10.139929","_rn_":"mean in group Rural...9"},{"1":"KIDNEY_AdjPrev","2":"1.331367e-32","3":"2.998925","4":"2.848574","_rn_":"mean in group Rural...10"},{"1":"STROKE_AdjPrev","2":"1.098867e-44","3":"3.173388","4":"2.905437","_rn_":"mean in group Rural...11"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 

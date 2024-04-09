@@ -19,7 +19,57 @@ output:
         keep_md: true
 ---
 
-# Loading the data
+# Introduction
+The United States has a high prevalence of chronic diseases such as heart disease, cancer, and diabetes. 
+These diseases are the leading causes of death and disability in the United States. 
+The Centers for Disease Control and Prevention (CDC) estimates that chronic diseases account for 7 out of 10 deaths in the United States. 
+The CDC also estimates that chronic diseases are responsible for 86% of the nation's healthcare costs. 
+The prevalence of chronic diseases in the United States is a major public health concern.
+
+The CDC's PLACES project provides county-level data on chronic disease prevalence, health outcomes, and health behaviors in the United States.
+The PLACES project aims to provide data that can be used to identify and address health disparities at the local level.
+The PLACES data can be used to identify areas with high rates of chronic diseases and to develop targeted interventions to improve health outcomes.
+
+In this analysis, we will use the PLACES: County Data, 2023 release to examine the prevalence of chronic diseases in the United States.
+We will analyze the prevalence of chronic diseases such as arthritis, high blood pressure, cancer, asthma, and diabetes.
+We will also examine other health outcomes, health behaviors, and social determinants of health in the United States.
+The goal of this analysis is to identify areas with high rates of chronic diseases and to explore the factors that contribute to these disparities.
+
+# Data Source Description
+For this analysis, we will use PLACES: Local Data for Better Health, Place Data 2023 release.
+Here's a brief description of the dataset (as provided by the CDC, source cited below):
+
+* This dataset contains model-based county estimates. 
+* PLACES covers the entire United States—50 states and the District of Columbia—at county, place, census tract, and ZIP Code Tabulation Area levels. 
+* It provides information uniformly on this large scale for local areas at four geographic levels. 
+* Estimates were provided by the Centers for Disease Control and Prevention (CDC), Division of Population Health, Epidemiology and Surveillance Branch. 
+* PLACES was funded by the Robert Wood Johnson Foundation in conjunction with the CDC Foundation. 
+
+* This dataset includes estimates for 36 measures: 
+    * 13 for health outcomes, 
+    * 10 for preventive services use, 
+    * 4 for chronic disease-related health risk behaviors, 
+    * 7 for disabilities, and 3 for health status. 
+
+* Data sources used to generate these model-based estimates are:
+    * Behavioral Risk Factor Surveillance System (BRFSS) 2021 or 2020 data, 
+    * Census Bureau 2021 or 2020 county population estimate data, and 
+    * American Community Survey 2017–2021, or 2016–2020 estimates. 
+
+* The 2023 release uses 2021 BRFSS data for 29 measures and 2020 BRFSS data for 7 measures 
+    (all teeth lost, dental visits, mammograms, cervical cancer screening, colorectal cancer screening, core preventive services among older adults, and sleeping less than 7 hours) 
+    that the survey collects data on every other year. 
+
+* More information about the methodology can be found at www.cdc.gov/places.
+
+**Source:** 
+    
+* https://data.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Place-Data-202/eav7-hnsx/about_data
+
+* Further information about the dataset can be found here: https://www.cdc.gov/places/about/index.html
+
+# Exploration and Data Preparation
+## Quick glimpse into the data
 Lets start by loading the data and examining the first few rows.
 ```{r load_data, message=FALSE, warning=FALSE}
     # loading data
@@ -54,126 +104,36 @@ The dataset contains the following columns:
     colnames(places_county_2023)
 ```
 
-# Data Preparation
-We will create new datasets for our analysis by filtering the columns of interest.
-```{r data_preparation_1, message=FALSE, warning=FALSE}
-    # key columns
-    key_cols <- c('StateAbbr', 'StateDesc', 'CountyName', 'CountyFIPS', 'TotalPopulation', 'Geolocation')
+## Features in the dataset
+The dataset contains a wide range of features related to chronic diseases, health outcomes, health behaviors, and social determinants of health.
+Here are some of the key features in the dataset:
 
-    
-    chronic_disease_cols <- c('ARTHRITIS_AdjPrev', 'BPHIGH_AdjPrev', 'CANCER_AdjPrev', 'CASTHMA_AdjPrev', 
-                                'CERVICAL_AdjPrev', 'CHD_AdjPrev', 'COPD_AdjPrev', 'DEPRESSION_AdjPrev', 
-                                'DIABETES_AdjPrev', 'KIDNEY_AdjPrev', 'STROKE_AdjPrev')
-
-    gen_health_cols <- c('GHLTH_AdjPrev', 'MHLTH_AdjPrev', 'PHLTH_AdjPrev')
-
-    risk_factors_cols <- c('HIGHCHOL_AdjPrev', 'OBESITY_AdjPrev')
-    disabilities_cols <- c('DISABILITY_AdjPrev', 'HEARING_AdjPrev', 'VISION_AdjPrev', 'COGNITION_AdjPrev', 'MOBILITY_AdjPrev', 'SELFCARE_AdjPrev', 'INDEPLIVE_AdjPrev')
-
-    negative_health_behavior_cols <- c('BINGE_AdjPrev', 'CSMOKING_AdjPrev')
-    positive_health_behavior_cols <- c('LPA_AdjPrev')
-    preventive_care_cols <- c('BPMED_AdjPrev', 'CHECKUP_AdjPrev', 'CHOLSCREEN_AdjPrev', 'COLON_SCREEN_AdjPrev')
-    sdoh_cols <- c('ACCESS2_AdjPrev')
-
-    # create the datasets
-    chronic_disease_data <- places_county_2023[, c(key_cols, chronic_disease_cols)]
-    gen_health_data <- places_county_2023[, c(key_cols, gen_health_cols)]
-    risk_factors_data <- places_county_2023[, c(key_cols, risk_factors_cols)]
-    disabilities_data <- places_county_2023[, c(key_cols, disabilities_cols)]
-    negative_health_behavior_data <- places_county_2023[, c(key_cols, negative_health_behavior_cols)]
-    positive_health_behavior_data <- places_county_2023[, c(key_cols, positive_health_behavior_cols)]
-    preventive_care_data <- places_county_2023[, c(key_cols, preventive_care_cols)]
-    sdoh_data <- places_county_2023[, c(key_cols, sdoh_cols)]
-
-    # display the first few rows of the datasets
-    head(chronic_disease_data)
-    head(gen_health_data)
-    head(risk_factors_data)
-    head(disabilities_data)
-    head(negative_health_behavior_data)
-    head(positive_health_behavior_data)
-    head(preventive_care_data)
-    head(sdoh_data)
-```
-
-# Descriptive Statistics
-We will now calculate the descriptive statistics for the datasets.
-```{r descriptive_statistics, message=FALSE, warning=FALSE}
-    # function to calculate descriptive statistics
-    calculate_descriptive_statistics <- function(df){
-        # calculate the descriptive statistics
-        desc_stats <- summary(df)
-        return(desc_stats)
-    }
-
-    # calculate the descriptive statistics
-    chronic_disease_desc_stats <- calculate_descriptive_statistics(chronic_disease_data)
-    gen_health_desc_stats <- calculate_descriptive_statistics(gen_health_data)
-    risk_factors_desc_stats <- calculate_descriptive_statistics(risk_factors_data)
-    disabilities_desc_stats <- calculate_descriptive_statistics(disabilities_data)
-    negative_health_behavior_desc_stats <- calculate_descriptive_statistics(negative_health_behavior_data)
-    positive_health_behavior_desc_stats <- calculate_descriptive_statistics(positive_health_behavior_data)
-    preventive_care_desc_stats <- calculate_descriptive_statistics(preventive_care_data)
-    sdoh_desc_stats <- calculate_descriptive_statistics(sdoh_data)
-
-    # display the descriptive statistics
-    chronic_disease_desc_stats
-    gen_health_desc_stats
-    risk_factors_desc_stats
-    disabilities_desc_stats
-    negative_health_behavior_desc_stats
-    positive_health_behavior_desc_stats
-    preventive_care_desc_stats
-    sdoh_desc_stats
-```
-
-# Data Visualization
-We will now visualize the data using bar plots.
-```{r data_visualization, message=FALSE, warning=FALSE}
-    # load the required libraries
-    library(ggplot2)
+```{r load_libraries, message=FALSE, warning=FALSE}
     library(dplyr)
     library(tidyr)
-
-    # function to create bar plots
-    create_bar_plot <- function(df, title){
-        # create a dataframe for plotting
-        df_plot <- df %>%
-            gather(key = 'variable', value = 'value', -c(key_cols)) %>%
-            mutate(variable = factor(variable, levels = colnames(df)[-(1:length(key_cols))]))
-        
-        # create the bar plot
-        p <- ggplot(df_plot, aes(x = variable, y = value)) +
-            geom_bar(stat = 'identity', fill = 'steelblue') +
-            theme_minimal() +
-            theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-            labs(title = title, x = 'Variable', y = 'Value')
-        
-        return(p)
-    }
-
-    # create the bar plots
-    chronic_disease_plot <- create_bar_plot(chronic_disease_data, 'Chronic Disease Data')
-    gen_health_plot <- create_bar_plot(gen_health_data, 'General Health Data')
-    risk_factors_plot <- create_bar_plot(risk_factors_data, 'Risk Factors Data')
-    disabilities_plot <- create_bar_plot(disabilities_data, 'Disabilities Data')
-    negative_health_behavior_plot <- create_bar_plot(negative_health_behavior_data, 'Negative Health Behavior Data')
-    positive_health_behavior_plot <- create_bar_plot(positive_health_behavior_data, 'Positive Health Behavior Data')
-    preventive_care_plot <- create_bar_plot(preventive_care_data, 'Preventive Care Data')
-    sdoh_plot <- create_bar_plot(sdoh_data, 'Social Determinants of Health Data')
-
-    # display the bar plots
-    print(chronic_disease_plot)
-    print(gen_health_plot)
-    print(risk_factors_plot)
-    print(disabilities_plot)
-    print(negative_health_behavior_plot)
-    print(positive_health_behavior_plot)
-    print(preventive_care_plot)
-    print(sdoh_plot)
 ```
 
-# Enrich County Data
+### US Counties Data
+The dataset is at the county level and includes information about the state, county name, county FIPS code, total population, and geolocation.
+All observations in the dataset are identified by the following key columns:
+```{r key_columns, message=FALSE, warning=FALSE}
+    key_cols <- c('StateAbbr', 'StateDesc', 'CountyName', 'CountyFIPS', 'TotalPopulation', 'Geolocation')
+    places_county_2023[key_cols] %>% head()
+```
+
+We will start by preparing counties dataset, as this is the granularity level for all our data.
+```{r counties_data_preparation, message=FALSE, warning=FALSE}
+    # using key_cols to filter the required columns
+    counties_data <- places_county_2023[key_cols] %>% distinct()
+
+    # check for missing values
+    missing_values <- sapply(counties_data, function(x) sum(is.na(x)))
+    missing_values
+```
+As we can see, no missing values are present in the counties dataset.
+
+For our analysis, we will enrich the counties dataset with additional information about the location type - whether it is a city, town, or rural area.
+This will be useful for understanding the context of the counties and their health outcomes.
 ```{r enrich_county_data, message=FALSE, warning=FALSE}
     # load urban rural classification data
     urban_rural_url <- 'https://drive.google.com/file/d/1-w2AvZj4_sqEzMMS-NCPsILAZzKPaVvE/view?usp=sharing'
@@ -207,23 +167,326 @@ We will now visualize the data using bar plots.
 
     # join urban_rural_data with key_cols and get the urban_rural_classification
     # join on 'FIPS' in urban_rural_data and 'CountyFIPS' in key_cols
-    county_data <- places_county_2023[ , key_cols] %>%
-        distinct() %>%
-        left_join(urban_rural_data, by = c('CountyFIPS' = 'FIPS'))
+    enriched_county_data <- counties_data %>%
+        left_join(urban_rural_data %>% select(FIPS, urban_rural_code, urban_rural_classification), by = c('CountyFIPS' = 'FIPS'))
 
     # display the county data
-    head(county_data)
-
-    # get missing values (as %) in urban_rural_classification
-    missing_values <- sum(is.na(county_data$urban_rural_classification)) / nrow(county_data) * 100
-    missing_values
+    head(enriched_county_data)
 
     # group by urban_rural_classification and get the count
-    urban_rural_count <- county_data %>%
+    urban_rural_count <- enriched_county_data %>%
         group_by(urban_rural_classification) %>%
         summarise(count = n())
 
     # display the urban_rural_count
     urban_rural_count
+
+    # display where urban_rural_classification is missing
+    missing_urban_rural <- enriched_county_data %>%
+        filter(is.na(urban_rural_classification))
+    missing_urban_rural
+
+    # the 2 counties we are missing urban_rural_classification for are: 'Copper River' and 'Chugach' counties both in Alaska
+    # we will manually set the urban_rural_code and urban_rural_classification for these counties
+    enriched_county_data <- enriched_county_data %>%
+        mutate(
+            urban_rural_code = case_when(
+                CountyName == 'Copper River' ~ 6,
+                CountyName == 'Chugach' ~ 6,
+                TRUE ~ urban_rural_code
+            ),
+            urban_rural_classification = case_when(
+                CountyName == 'Copper River' ~ 'Noncore',
+                CountyName == 'Chugach' ~ 'Noncore',
+                TRUE ~ urban_rural_classification
+            )
+        )
+
+    # check for missing values
+    missing_values <- sapply(enriched_county_data, function(x) sum(is.na(x)))
+    missing_values
+
+    # finally, for ease of joining with other datasets, we will create a LocationID column
+    # which is a combination of StateAbbr and CountyFIPS
+    enriched_county_data$LocationID <- paste(enriched_county_data$StateAbbr, enriched_county_data$CountyFIPS, sep = '_')
+
+    # urban_rural_code and urban_rural_classification are now available for all counties
+    # we can convert urban_rural_code to a factor for better analysis
+    enriched_county_data$urban_rural_code <- as.factor(enriched_county_data$urban_rural_code)
+    enriched_county_data$urban_rural_classification <- as.factor(enriched_county_data$urban_rural_classification)
+
+    # display the enriched county data
+    head(enriched_county_data)
+```
+
+### Chronic Disease Data
+The dataset includes several features related to chronic diseases such as arthritis, high blood pressure, cancer, asthma, and diabetes.
+Here are some of the key features related to chronic diseases:
+```{r chronic_disease_columns, message=FALSE, warning=FALSE}
+    chronic_disease_cols <- c('ARTHRITIS_AdjPrev', 'BPHIGH_AdjPrev', 'CANCER_AdjPrev', 'CASTHMA_AdjPrev', 
+                                'CERVICAL_AdjPrev', 'CHD_AdjPrev', 'COPD_AdjPrev', 'DEPRESSION_AdjPrev', 
+                                'DIABETES_AdjPrev', 'KIDNEY_AdjPrev', 'STROKE_AdjPrev')
+    places_county_2023[chronic_disease_cols] %>% head()
+```
+
+Next, we will prepare the chronic disease data by filtering the required columns and handling missing values.
+```{r chronic_disease_data_preparation, message=FALSE, warning=FALSE}
+    # for this dataset we will select the key_cols and chronic_disease_cols
+    chronic_disease_data <- places_county_2023[key_cols %>% union(chronic_disease_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    chronic_disease_data$LocationID <- paste(chronic_disease_data$StateAbbr, chronic_disease_data$CountyFIPS, sep = '_')
+    chronic_disease_data <- chronic_disease_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(chronic_disease_data, function(x) sum(is.na(x)))
+    missing_values
+
+    # as the number of missing values is small, we will drop the rows with missing values
+    chronic_disease_data <- chronic_disease_data %>% drop_na()
+
+    # display the chronic disease data
+    head(chronic_disease_data)
+```
+
+### Health Status Data
+The dataset also includes features related to general health status, mental health, and physical health.
+Here are some of the key features related to general health:
+```{r general_health_columns, message=FALSE, warning=FALSE}
+    health_status_cols <- c('GHLTH_AdjPrev', 'MHLTH_AdjPrev', 'PHLTH_AdjPrev')
+    places_county_2023[health_status_cols] %>% head()
+```
+
+Next, we will prepare the health status data by filtering the required columns and handling missing values.
+```{r health_status_data_preparation, message=FALSE, warning=FALSE}
+    # for this dataset we will select the key_cols and health_status_cols
+    health_status_data <- places_county_2023[key_cols %>% union(health_status_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    health_status_data$LocationID <- paste(health_status_data$StateAbbr, health_status_data$CountyFIPS, sep = '_')
+    health_status_data <- health_status_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(health_status_data, function(x) sum(is.na(x)))
+    missing_values
+
+    # as the number of missing values is small, we will drop the rows with missing values
+    health_status_data <- health_status_data %>% drop_na()
+
+    # display the health status data
+    head(health_status_data)
+```
+
+### Risk Factors Data
+The dataset includes features related to risk factors for chronic diseases such as high cholesterol and obesity.
+Here are some of the key features related to risk factors:
+```{r risk_factors_columns, message=FALSE, warning=FALSE}
+    risk_factors_cols <- c('HIGHCHOL_AdjPrev', 'OBESITY_AdjPrev')
+    places_county_2023[risk_factors_cols] %>% head()
+```
+
+Next, we will prepare the risk factors data by filtering the required columns and handling missing values.
+```{r risk_factors_data_preparation, message=FALSE, warning=FALSE}
+    # for this dataset we will select the key_cols and risk_factors_cols
+    risk_factors_data <- places_county_2023[key_cols %>% union(risk_factors_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    risk_factors_data$LocationID <- paste(risk_factors_data$StateAbbr, risk_factors_data$CountyFIPS, sep = '_')
+    risk_factors_data <- risk_factors_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(risk_factors_data, function(x) sum(is.na(x)))
+    missing_values
+
+    # as the number of missing values is small, we will drop the rows with missing values
+    risk_factors_data <- risk_factors_data %>% drop_na()
+
+    # display the risk factors data
+    head(risk_factors_data)
+```
+
+### Disabilities Data
+The dataset includes features related to disabilities such as disability status and disability prevalence.
+Here are some of the key features related to disabilities:
+```{r disability_columns, message=FALSE, warning=FALSE}
+    disabilities_cols <- c('DISABILITY_AdjPrev', 'HEARING_AdjPrev', 'VISION_AdjPrev', 'COGNITION_AdjPrev', 'MOBILITY_AdjPrev', 'SELFCARE_AdjPrev', 'INDEPLIVE_AdjPrev')
+    places_county_2023[disabilities_cols] %>% head()
+```
+
+Next, we will prepare the disabilities data by filtering the required columns and handling missing values.
+```{r disabilities_data_preparation, message=FALSE, warning=FALSE}
+    # for this dataset we will select the key_cols and disabilities_cols
+    disabilities_data <- places_county_2023[key_cols %>% union(disabilities_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    disabilities_data$LocationID <- paste(disabilities_data$StateAbbr, disabilities_data$CountyFIPS, sep = '_')
+    disabilities_data <- disabilities_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(disabilities_data, function(x) sum(is.na(x)))
+    missing_values
+
+    # as the number of missing values is small, we will drop the rows with missing values
+    disabilities_data <- disabilities_data %>% drop_na()
+
+    # display the disabilities data
+    head(disabilities_data)
+```
+
+### Health Behaviors Data
+The dataset includes features related to health behaviors such as smoking, physical inactivity, and excessive drinking, which are negative health behaviors that can contribute to chronic diseases.
+```{r negative_health_behaviors, message=FALSE, warning=FALSE}
+    negative_health_behavior_cols <- c('BINGE_AdjPrev', 'CSMOKING_AdjPrev')
+    places_county_2023[negative_health_behavior_cols] %>% head()
+```
+
+The dataset also includes positive health behaviors such as physical activity.
+```{r positive_health_behaviors, message=FALSE, warning=FALSE}
+    positive_health_behavior_cols <- c('LPA_AdjPrev')
+    places_county_2023[positive_health_behavior_cols] %>% head()
+```
+
+Next, we will prepare the health behaviors data by filtering the required columns and handling missing values.
+```{r health_behaviors_data_preparation, message=FALSE, warning=FALSE}
+    # negative_health_behavior_cols
+    # for this dataset we will select the key_cols and negative_health_behavior_cols
+    negative_health_behaviors_data <- places_county_2023[key_cols %>% union(negative_health_behavior_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    negative_health_behaviors_data$LocationID <- paste(negative_health_behaviors_data$StateAbbr, negative_health_behaviors_data$CountyFIPS, sep = '_')
+    negative_health_behaviors_data <- negative_health_behaviors_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(negative_health_behaviors_data, function(x) sum(is.na(x)))
+    missing_values
+
+    # as the number of missing values is small, we will drop the rows with missing values
+    negative_health_behaviors_data <- negative_health_behaviors_data %>% drop_na()
+
+    # display the negative health behaviors data
+    head(negative_health_behaviors_data)
+
+    # positive_health_behavior_cols
+    # for this dataset we will select the key_cols and health_behaviors_cols
+    positive_health_behaviors_data <- places_county_2023[key_cols %>% union(positive_health_behavior_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    positive_health_behaviors_data$LocationID <- paste(positive_health_behaviors_data$StateAbbr, positive_health_behaviors_data$CountyFIPS, sep = '_')
+    positive_health_behaviors_data <- positive_health_behaviors_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(positive_health_behaviors_data, function(x) sum(is.na(x)))
+    missing_values
+
+    # as the number of missing values is small, we will drop the rows with missing values
+    positive_health_behaviors_data <- positive_health_behaviors_data %>% drop_na()
+
+    # display the positive health behaviors data
+    head(positive_health_behaviors_data)
+```
+
+### Preventive Care Data
+The dataset includes features related to preventive care such as mammography screening, regular checkups, etc.
+```{r preventive_care_columns, message=FALSE, warning=FALSE}
+    preventive_care_cols <- c('BPMED_AdjPrev', 'CHECKUP_AdjPrev', 'CHOLSCREEN_AdjPrev', 'COLON_SCREEN_AdjPrev')
+    places_county_2023[preventive_care_cols] %>% head()
+```
+Next, we will prepare the preventive care data by filtering the required columns and handling missing values.
+```{r preventive_care_data_preparation, message=FALSE, warning=FALSE}
+    # for this dataset we will select the key_cols and preventive_care_cols
+    preventive_care_data <- places_county_2023[key_cols %>% union(preventive_care_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    preventive_care_data$LocationID <- paste(preventive_care_data$StateAbbr, preventive_care_data$CountyFIPS, sep = '_')
+    preventive_care_data <- preventive_care_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(preventive_care_data, function(x) sum(is.na(x)))
+    missing_values
+
+    # as the number of missing values is small, we will drop the rows with missing values
+    preventive_care_data <- preventive_care_data %>% drop_na()
+
+    # display the preventive care data
+    head(preventive_care_data)
+```
+
+### Social Determinants Data
+We have only one feature related to social determinants of health in the dataset, which is access to health insurance.
+```{r social_determinants_columns, message=FALSE, warning=FALSE}
+    sdoh_cols <- c('ACCESS2_AdjPrev')
+    places_county_2023[sdoh_cols] %>% head()
+```
+
+Next, we will prepare the social determinants data by filtering the required columns and handling missing values.
+```{r social_determinants_data_preparation, message=FALSE, warning=FALSE}
+    # for this dataset we will select the key_cols and sdoh_cols
+    social_determinants_data <- places_county_2023[key_cols %>% union(sdoh_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    social_determinants_data$LocationID <- paste(social_determinants_data$StateAbbr, social_determinants_data$CountyFIPS, sep = '_')
+    social_determinants_data <- social_determinants_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(social_determinants_data, function(x) sum(is.na(x)))
+    missing_values
+
+    # as the number of missing values is small, we will drop the rows with missing values
+    social_determinants_data <- social_determinants_data %>% drop_na()
+
+    # display the social determinants data
+    head(social_determinants_data)
+```
+
+# Data Analysis
+For our analysis, we theorize that the age-adjusted prevalence of chronic diseases is influenced by:
+    * whether the county is urban or rural, 
+    * the prevalence of disabilities, 
+    * negative health behaviors, 
+    * positive health behaviors, 
+    * preventive care, 
+    * and social determinants of health. 
+
+We will analyze the relationship between these factors and the age-adjusted prevalence of chronic diseases.
+
+## Influence of the county type on the age-adjusted prevalence of chronic diseases
+We will analyze the influence of the county type (urban or rural) on the age-adjusted prevalence of chronic diseases.
+```{r county_type_analysis, message=FALSE, warning=FALSE}
+    # merge the chronic diseases data with the county type data
+    chronic_diseases_data <- merge(chronic_disease_data, enriched_county_data, by = 'LocationID')
+
+    # we will rename urban_rural_classification to urban_rural_sub_class
+    # and based on the values of urban_rural_code, we will create a new column urban_rural_classification as follows:
+    # 1 -> Urban, 2 -> Urban, 3 -> Urban, 4 -> Urban, 5 -> Rural, 6 -> Rural
+    chronic_diseases_data$urban_rural_sub_class <- chronic_diseases_data$urban_rural_classification
+    chronic_diseases_data$urban_rural_classification <- ifelse(chronic_diseases_data$urban_rural_code %in% c(1, 2, 3, 4), 'Urban', 'Rural')
+
+    # calculate the mean age-adjusted prevalence of chronic diseases (chronic_disease_cols) by urban_rural_classification
+    chronic_diseases_mean <- chronic_diseases_data %>% group_by(urban_rural_classification) %>% summarise(across(all_of(chronic_disease_cols), mean, na.rm = TRUE))
+
+    # display the mean age-adjusted prevalence of chronic diseases by urban_rural_classification
+    chronic_diseases_mean
+
+    # visualize the mean age-adjusted prevalence of chronic diseases by urban_rural_classification
+    # box plot for each chronic disease column by urban_rural_classification
+    library(ggplot2)
+    library(tidyr)
+
+    chronic_diseases_data_long <- chronic_diseases_data %>% pivot_longer(cols = chronic_disease_cols, names_to = 'ChronicDisease', values_to = 'AgeAdjustedPrevalence')
+
+    ggplot(chronic_diseases_data_long, aes(x = urban_rural_classification, y = AgeAdjustedPrevalence, fill = urban_rural_classification)) +
+        geom_boxplot() +
+        facet_wrap(~ChronicDisease, scales = 'free_y') +
+        labs(title = 'Mean Age-Adjusted Prevalence of Chronic Diseases by County Type', x = 'County Type', y = 'Age-Adjusted Prevalence') +
+        theme_minimal()
+
+    # perform a t-test to determine if there is a significant difference in the age-adjusted prevalence of chronic diseases between urban and rural counties
+    t_test_results <- lapply(chronic_disease_cols, function(col) {
+        t_test <- t.test(chronic_diseases_data[[col]] ~ chronic_diseases_data$urban_rural_classification)
+        data.frame(ChronicDisease = col, p_value = t_test$p.value, mean_urban = t_test$estimate[1], mean_rural = t_test$estimate[2])
+    }) %>% bind_rows()
+
+    # display the t-test results
+    t_test_results
 ```
 
