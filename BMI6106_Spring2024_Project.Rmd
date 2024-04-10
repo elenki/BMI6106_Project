@@ -98,28 +98,37 @@ Lets start by loading the data and examining the first few rows.
     head(places_county_2023)
 ```
 
+
 The dataset contains the following columns:
 ```{r column_names, message=FALSE, warning=FALSE}
     # display the column names
     colnames(places_county_2023)
 ```
 
-## Features in the dataset
+
+## Descriptive Analysis
 The dataset contains a wide range of features related to chronic diseases, health outcomes, health behaviors, and social determinants of health.
-Here are some of the key features in the dataset:
+We will start by exploring the data and understanding the distribution of key variables.
+We will also identify any missing values and outliers in the dataset.
 
 ```{r load_libraries, message=FALSE, warning=FALSE}
     library(dplyr)
     library(tidyr)
+    library(ggplot2)
 ```
 
+
 ### US Counties Data
+These are our key columns in the dataset.
+
 The dataset is at the county level and includes information about the state, county name, county FIPS code, total population, and geolocation.
 All observations in the dataset are identified by the following key columns:
+
 ```{r key_columns, message=FALSE, warning=FALSE}
     key_cols <- c('StateAbbr', 'StateDesc', 'CountyName', 'CountyFIPS', 'TotalPopulation', 'Geolocation')
     places_county_2023[key_cols] %>% head()
 ```
+
 
 We will start by preparing counties dataset, as this is the granularity level for all our data.
 ```{r counties_data_preparation, message=FALSE, warning=FALSE}
@@ -131,6 +140,7 @@ We will start by preparing counties dataset, as this is the granularity level fo
     missing_values
 ```
 As we can see, no missing values are present in the counties dataset.
+
 
 For our analysis, we will enrich the counties dataset with additional information about the location type - whether it is a city, town, or rural area.
 This will be useful for understanding the context of the counties and their health outcomes.
@@ -223,11 +233,23 @@ This will be useful for understanding the context of the counties and their heal
 The dataset includes several features related to chronic diseases such as arthritis, high blood pressure, cancer, asthma, and diabetes.
 Here are some of the key features related to chronic diseases:
 ```{r chronic_disease_columns, message=FALSE, warning=FALSE}
-    chronic_disease_cols <- c('ARTHRITIS_AdjPrev', 'BPHIGH_AdjPrev', 'CANCER_AdjPrev', 'CASTHMA_AdjPrev', 
-                                'CERVICAL_AdjPrev', 'CHD_AdjPrev', 'COPD_AdjPrev', 'DEPRESSION_AdjPrev', 
-                                'DIABETES_AdjPrev', 'KIDNEY_AdjPrev', 'STROKE_AdjPrev')
+    chronic_disease_cols <- c('ARTHRITIS_AdjPrev', 'BPHIGH_AdjPrev', 'CANCER_AdjPrev', 'CASTHMA_AdjPrev', 'CHD_AdjPrev', 
+                                'COPD_AdjPrev', 'DEPRESSION_AdjPrev', 'DIABETES_AdjPrev', 'KIDNEY_AdjPrev', 'STROKE_AdjPrev')
     places_county_2023[chronic_disease_cols] %>% head()
 ```
+
+Column descriptions:
+
+* ARTHRITIS_AdjPrev: Model-based estimate for age-adjusted prevalence of arthritis among adults aged >=18 years, 2021
+* BPHIGH_AdjPrev: Model-based estimate for age-adjusted prevalence of high blood pressure among adults aged >=18 years, 2021
+* CANCER_AdjPrev: Model-based estimate for age-adjusted prevalence of cancer (excluding skin cancer) among adults aged >=18 years, 2021
+* CASTHMA_AdjPrev: Model-based estimate for age-adjusted prevalence of current asthma among adults aged >=18 years, 2021
+* CHD_AdjPrev: Model-based estimate for age-adjusted prevalence of coronary heart disease among adults aged >=18 years, 2021
+* COPD_AdjPrev: Model-based estimate for age-adjusted prevalence of chronic obstructive pulmonary disease among adults aged >=18 years, 2021
+* DEPRESSION_AdjPrev: Model-based estimate for age-adjusted prevalence of depression among adults aged >=18 years, 2021
+* DIABETES_AdjPrev: Model-based estimate for age-adjusted prevalence of diagnosed diabetes among adults aged >=18 years, 2021
+* KIDNEY_AdjPrev: Model-based estimate for age-adjusted prevalence of chronic kidney disease among adults aged >=18 years, 2021
+* STROKE_AdjPrev: Model-based estimate for age-adjusted prevalence of stroke among adults aged >=18 years, 2021
 
 Next, we will prepare the chronic disease data by filtering the required columns and handling missing values.
 ```{r chronic_disease_data_preparation, message=FALSE, warning=FALSE}
@@ -248,6 +270,107 @@ Next, we will prepare the chronic disease data by filtering the required columns
     # display the chronic disease data
     head(chronic_disease_data)
 ```
+
+#### Distribution
+Before we proceed with the analysis, we will check the normality of the chronic disease data.
+This is important as many statistical tests assume that the data is normally distributed.
+We will start by visualizing the distribution of the data using histograms and Q-Q plots.
+```{r chronic_disease_data_distribution, message=FALSE, warning=FALSE}
+    # distribution of chronic disease data
+    chronic_disease_data %>% gather(key = 'disease', value = 'prevalence', -LocationID) %>%
+        ggplot(aes(x = prevalence)) +
+        geom_histogram(bins = 20) +
+        facet_wrap(~disease, scales = 'free') +
+        theme_minimal()
+```
+
+#### Normality
+```{r chronic_disease_data_normality, message=FALSE, warning=FALSE}
+    # normality test for chronic disease data
+    chronic_disease_data %>% gather(key = 'disease', value = 'prevalence', -LocationID) %>%
+        ggplot(aes(sample = prevalence)) +
+        stat_qq() +
+        facet_wrap(~disease, scales = 'free') +
+        theme_minimal()
+```
+
+The Q-Q plots show that the data for each chronic disease is not normally distributed.
+We can confirm this by performing a Shapiro-Wilk test for normality.
+```{r chronic_disease_data_normality_test, message=FALSE, warning=FALSE}
+    # normality test for chronic disease data
+    normality_test <- chronic_disease_data %>% gather(key = 'disease', value = 'prevalence', -LocationID) %>%
+        group_by(disease) %>%
+        summarise(p_value = shapiro.test(prevalence)$p.value)
+
+    normality_test
+```
+The p-values from the Shapiro-Wilk test are all less than 0.05, indicating that the data is not normally distributed.
+This means that we should be cautious when applying statistical tests that assume normality.
+
+#### Outliers
+Outliers can also affect the results of statistical tests and models. 
+We will check for outliers in the chronic disease data using boxplots and z-scores.
+```{r chronic_disease_data_exploration, message=FALSE, warning=FALSE}
+    # boxplot for chronic disease data
+    # for labels, strip the '_AdjPrev' suffix, create new data frame for plotting
+    chronic_disease_data_plot <- chronic_disease_data %>% 
+        gather(key = 'disease', value = 'prevalence', -LocationID) %>%
+        mutate(disease = gsub('_AdjPrev', '', disease))
+
+    # boxplot (log scale on y-axis)
+    chronic_disease_data_plot %>% ggplot(aes(x = disease, y = prevalence)) +
+        geom_boxplot() +
+        scale_y_log10() +
+        labs(title = 'Chronic Disease Prevalence Distribution',
+             x = 'Disease',
+             y = 'Prevalence (log scale)') +
+        theme_minimal()
+
+    # outlier detection
+    # calculate z-scores for each disease and location
+    # may need to pivot the data to calculate z-scores
+    chronic_disease_data_zscores <- chronic_disease_data %>% 
+        pivot_longer(cols = -LocationID, names_to = 'disease', values_to = 'prevalence') %>%
+        group_by(disease) %>%
+        mutate(zscore = (prevalence - mean(prevalence)) / sd(prevalence))
+
+    # plot z-scores
+    # for labels, strip the '_AdjPrev' suffix, create new data frame for plotting
+    chronic_disease_data_zscores_plot <- chronic_disease_data_zscores %>% 
+        mutate(disease = gsub('_AdjPrev', '', disease))
+
+    # boxplot of z-scores
+    chronic_disease_data_zscores_plot %>% ggplot(aes(x = disease, y = zscore)) +
+        geom_boxplot() +
+        labs(title = 'Chronic Disease Prevalence Z-Scores',
+             x = 'Disease',
+             y = 'Z-Score') +
+        theme_minimal()
+
+    # for each disease, calculate the number of outliers and percentage of total
+    # using z-score threshold of 3
+    outliers <- chronic_disease_data_zscores %>% 
+        group_by(disease) %>%
+        summarize(outliers = sum(abs(zscore) > 3),
+                  total = n(),
+                  percentage = outliers / total * 100)
+
+    outliers
+```
+
+The boxplots show the distribution of chronic disease prevalence for each disease, with some diseases having a higher prevalence than others. 
+The z-score boxplots show the presence of outliers for each disease, with some diseases having more outliers than others. 
+The table summarizes the number of outliers and the percentage of total observations that are considered outliers for each disease.
+
+Based on the z-score threshold of 3, the percentage of outliers ranges from 0.16% to 1.72% across different diseases.
+Overall, the chronic disease data shows variations in prevalence and the presence of outliers for some diseases.
+
+Strategy for Handling Outliers:
+- For the analysis, we will keep the outliers in the dataset as they represent valid data points.
+- We will consider the outliers during the analysis and interpretation of results.
+
+Finally, as all the chronic_disease_cols are our target variables, we will not perform any feature selection or dimensionality reduction on this dataset.
+Considering the non-normal distribution of the data, we will use non-parametric tests for the analysis.
 
 ### Health Status Data
 The dataset also includes features related to general health status, mental health, and physical health.
@@ -277,6 +400,141 @@ Next, we will prepare the health status data by filtering the required columns a
     head(health_status_data)
 ```
 
+Let's explore the distribution, outliers, and summary statistics of the health status data using boxplots.
+```{r health_status_data_exploration, message=FALSE, warning=FALSE}
+    # boxplot for health status data
+    # for labels, strip the '_AdjPrev' suffix, create new data frame for plotting
+    health_status_data_plot <- health_status_data %>% 
+        gather(key = 'status', value = 'prevalence', -LocationID) %>%
+        mutate(status = gsub('_AdjPrev', '', status))
+
+    # boxplot (log scale on y-axis)
+    health_status_data_plot %>% ggplot(aes(x = status, y = prevalence)) +
+        geom_boxplot() +
+        scale_y_log10() +
+        labs(title = 'Health Status Prevalence Distribution',
+             x = 'Health Status',
+             y = 'Prevalence (log scale)') +
+        theme_minimal()
+
+    # outlier detection
+    # calculate z-scores for each health status and location
+    # may need to pivot the data to calculate z-scores
+    health_status_data_zscores <- health_status_data %>% 
+        pivot_longer(cols = -LocationID, names_to = 'status', values_to = 'prevalence') %>%
+        group_by(status) %>%
+        mutate(zscore = (prevalence - mean(prevalence)) / sd(prevalence))
+
+    # plot z-scores
+    # for labels, strip the '_AdjPrev' suffix, create new data frame for plotting
+    health_status_data_zscores_plot <- health_status_data_zscores %>% 
+        mutate(status = gsub('_AdjPrev', '', status))
+
+    # boxplot of z-scores
+    health_status_data_zscores_plot %>% ggplot(aes(x = status, y = zscore)) +
+        geom_boxplot() +
+        labs(title = 'Health Status Prevalence Z-Scores',
+             x = 'Health Status',
+             y = 'Z-Score') +
+        theme_minimal()
+
+    # for each health status, calculate the number of outliers and percentage of total
+    # using z-score threshold of 3
+    outliers <- health_status_data_zscores %>% 
+        group_by(status) %>%
+        summarize(outliers = sum(abs(zscore) > 3),
+                  total = n(),
+                  percentage = outliers / total * 100)
+
+    outliers
+```
+The outliers range from 0.19% to 0.65% across different health status indicators.
+This indicates that the health status data has relatively few outliers compared to the chronic disease data.
+
+Strategy for Handling Outliers:
+- Similar to the chronic disease data, we will keep the outliers in the dataset as they represent valid data points.
+- We will consider the outliers during the analysis and interpretation of results.
+
+Collinearity check is important to ensure that the predictors are not highly correlated with each other.
+We will calculate the correlation matrix for the health status data to identify any potential collinearity issues.
+```{r health_status_collinearity_check, message=FALSE, warning=FALSE}
+    # calculate correlation matrix for health status data
+    health_status_correlation <- health_status_data %>% select(-LocationID) %>% cor()
+
+    # display correlation matrix
+    health_status_correlation
+```
+The correlation matrix shows that the health status indicators are highly correlated with each other.
+This high correlation is expected as the indicators are related to different aspects of health status.
+We can combine these indicators into a single health status index or score.
+
+Next, we will create a health status index by combining the general health, mental health, and physical health indicators.
+```{r health_status_index_creation, message=FALSE, warning=FALSE}
+    # create a health status index by averaging the general health, mental health, and physical health indicators
+    health_status_data$HealthStatusIndex <- rowMeans(health_status_data %>% select(contains('AdjPrev')))
+
+    # display the health status data with the index
+    head(health_status_data)
+```
+The health status index provides a single measure that combines the general health, mental health, and physical health indicators.
+
+### Preventive Care Data (Potential Predictors)
+The dataset includes features related to preventive care such as mammography screening, regular checkups, etc.
+```{r preventive_care_columns, message=FALSE, warning=FALSE}
+    preventive_care_cols <- c('BPMED_AdjPrev', 'CERVICAL_AdjPrev', 'CHECKUP_AdjPrev', 'CHOLSCREEN_AdjPrev', 'COLON_SCREEN_AdjPrev')
+    places_county_2023[preventive_care_cols] %>% head()
+```
+Next, we will prepare the preventive care data by filtering the required columns and handling missing values.
+```{r preventive_care_data_preparation, message=FALSE, warning=FALSE}
+    # for this dataset we will select the key_cols and preventive_care_cols
+    preventive_care_data <- places_county_2023[key_cols %>% union(preventive_care_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    preventive_care_data$LocationID <- paste(preventive_care_data$StateAbbr, preventive_care_data$CountyFIPS, sep = '_')
+    preventive_care_data <- preventive_care_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(preventive_care_data, function(x) sum(is.na(x)))
+    missing_values
+
+    # as the number of missing values is small, we will drop the rows with missing values
+    preventive_care_data <- preventive_care_data %>% drop_na()
+
+    # display the preventive care data
+    head(preventive_care_data)
+```
+
+Let's explore the distribution of preventive care indicators using boxplots.
+```{r preventive_care_data_visualization, message=FALSE, warning=FALSE}
+    # gather the data for plotting
+    preventive_care_data_plot <- preventive_care_data %>% 
+        gather(key = 'care', value = 'prevalence', -LocationID) %>%
+        mutate(care = gsub('_AdjPrev', '', care))
+
+    # boxplot (log scale on y-axis)
+    preventive_care_data_plot %>% ggplot(aes(x = care, y = prevalence)) +
+        geom_boxplot() +
+        scale_y_log10() +
+        labs(title = 'Preventive Care Prevalence Distribution',
+             x = 'Preventive Care',
+             y = 'Prevalence (log scale)') +
+        theme_minimal()
+```
+
+The boxplots show the distribution of preventive care indicators across different counties.
+The prevalence of preventive care indicators varies, with some indicators having higher median values than others.
+
+Next, we will calculate the correlation matrix for the preventive care data to identify any potential collinearity issues.
+```{r preventive_care_collinearity_check, message=FALSE, warning=FALSE}
+    # calculate correlation matrix for preventive care data
+    preventive_care_correlation <- preventive_care_data %>% select(-LocationID) %>% cor()
+
+    # display correlation matrix
+    preventive_care_correlation
+```
+The correlation matrix shows that the preventive care indicators are moderately correlated with each other.
+This moderate correlation is expected as the indicators are related to different aspects of preventive care.
+
 ### Risk Factors Data
 The dataset includes features related to risk factors for chronic diseases such as high cholesterol and obesity.
 Here are some of the key features related to risk factors:
@@ -304,6 +562,70 @@ Next, we will prepare the risk factors data by filtering the required columns an
     # display the risk factors data
     head(risk_factors_data)
 ```
+
+Let's explore the distribution, outliers, and summary statistics of the risk factors data using boxplots.
+```{r risk_factors_data_exploration, message=FALSE, warning=FALSE}
+    # boxplot for risk factors data
+    # for labels, strip the '_AdjPrev' suffix, create new data frame for plotting
+    risk_factors_data_plot <- risk_factors_data %>% 
+        gather(key = 'factor', value = 'prevalence', -LocationID) %>%
+        mutate(factor = gsub('_AdjPrev', '', factor))
+
+    # boxplot (log scale on y-axis)
+    risk_factors_data_plot %>% ggplot(aes(x = factor, y = prevalence)) +
+        geom_boxplot() +
+        scale_y_log10() +
+        labs(title = 'Risk Factors Prevalence Distribution',
+             x = 'Risk Factor',
+             y = 'Prevalence (log scale)') +
+        theme_minimal()
+
+    # outlier detection
+    # calculate z-scores for each risk factor and location
+    # may need to pivot the data to calculate z-scores
+    risk_factors_data_zscores <- risk_factors_data %>% 
+        pivot_longer(cols = -LocationID, names_to = 'factor', values_to = 'prevalence') %>%
+        group_by(factor) %>%
+        mutate(zscore = (prevalence - mean(prevalence)) / sd(prevalence))
+
+    # plot z-scores
+    # for labels, strip the '_AdjPrev' suffix, create new data frame for plotting
+    risk_factors_data_zscores_plot <- risk_factors_data_zscores %>% 
+        mutate(factor = gsub('_AdjPrev', '', factor))
+
+    # boxplot of z-scores
+    risk_factors_data_zscores_plot %>% ggplot(aes(x = factor, y = zscore)) +
+        geom_boxplot() +
+        labs(title = 'Risk Factors Prevalence Z-Scores',
+             x = 'Risk Factor',
+             y = 'Z-Score') +
+        theme_minimal()
+
+    # for each risk factor, calculate the number of outliers and percentage of total
+    # using z-score threshold of 3
+    outliers <- risk_factors_data_zscores %>% 
+        group_by(factor) %>%
+        summarize(outliers = sum(abs(zscore) > 3),
+                  total = n(),
+                  percentage = outliers / total * 100)
+
+    outliers
+```
+We only have 1 outlier for 'HIGHCHOL_AdjPrev' and 0.91% outliers for 'OBESITY_AdjPrev'.
+This indicates that the risk factors data has relatively few outliers.
+We will keep the outliers in the dataset and consider them during the analysis.
+
+Collinearity Check for Risk Factors Data
+```{r risk_factors_collinearity_check, message=FALSE, warning=FALSE}
+    # calculate correlation matrix for risk factors data
+    risk_factors_correlation <- risk_factors_data %>% select(-LocationID) %>% cor()
+
+    # display correlation matrix
+    risk_factors_correlation
+```
+The correlation matrix shows a moderate positive correlation between 'HIGHCHOL_AdjPrev' and 'OBESITY_AdjPrev'.
+This indicates that there is some collinearity between these two risk factors.
+
 
 ### Disabilities Data
 The dataset includes features related to disabilities such as disability status and disability prevalence.
@@ -385,32 +707,6 @@ Next, we will prepare the health behaviors data by filtering the required column
     head(positive_health_behaviors_data)
 ```
 
-### Preventive Care Data
-The dataset includes features related to preventive care such as mammography screening, regular checkups, etc.
-```{r preventive_care_columns, message=FALSE, warning=FALSE}
-    preventive_care_cols <- c('BPMED_AdjPrev', 'CHECKUP_AdjPrev', 'CHOLSCREEN_AdjPrev', 'COLON_SCREEN_AdjPrev')
-    places_county_2023[preventive_care_cols] %>% head()
-```
-Next, we will prepare the preventive care data by filtering the required columns and handling missing values.
-```{r preventive_care_data_preparation, message=FALSE, warning=FALSE}
-    # for this dataset we will select the key_cols and preventive_care_cols
-    preventive_care_data <- places_county_2023[key_cols %>% union(preventive_care_cols)] %>% distinct()
-
-    # create a LocationID column and drop key_cols
-    preventive_care_data$LocationID <- paste(preventive_care_data$StateAbbr, preventive_care_data$CountyFIPS, sep = '_')
-    preventive_care_data <- preventive_care_data %>% select(-key_cols)
-
-    # check for missing values
-    missing_values <- sapply(preventive_care_data, function(x) sum(is.na(x)))
-    missing_values
-
-    # as the number of missing values is small, we will drop the rows with missing values
-    preventive_care_data <- preventive_care_data %>% drop_na()
-
-    # display the preventive care data
-    head(preventive_care_data)
-```
-
 ### Social Determinants Data
 We have only one feature related to social determinants of health in the dataset, which is access to health insurance.
 ```{r social_determinants_columns, message=FALSE, warning=FALSE}
@@ -437,6 +733,83 @@ Next, we will prepare the social determinants data by filtering the required col
     # display the social determinants data
     head(social_determinants_data)
 ```
+
+
+## Predictors Data
+Based on above data exploration, we have identified the following predictors that can be used to predict the health outcomes:
+* Access to Health Insurance
+* Regular Health Checkup
+
+We will prepare the predictors data by filtering the required columns and handling missing values.
+```{r predictors_data_preparation, message=FALSE, warning=FALSE}
+    # for this dataset we will select the key_cols and predictors_cols
+    predictors_cols <- c('ACCESS2_AdjPrev', 'CHECKUP_AdjPrev')
+    predictors_data <- places_county_2023[key_cols %>% union(predictors_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    predictors_data$LocationID <- paste(predictors_data$StateAbbr, predictors_data$CountyFIPS, sep = '_')
+    predictors_data <- predictors_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- predictors_data %>% summarise_all(~sum(is.na(.)))
+    missing_values
+
+    # we have very few missing values, we can safely remove them
+    predictors_data <- predictors_data %>% drop_na()
+
+    # check for missing values after removing
+    missing_values_after <- predictors_data %>% summarise_all(~sum(is.na(.)))
+```
+
+The predictors data has been prepared by selecting the required columns, creating a LocationID column, and handling missing values.
+There were very few missing values, which have been removed from the dataset.
+
+Lets analyze the predictors data to understand the distribution of the variables and identify any potential issues.
+First, lets look at the distribution of the predictors data.
+```{r predictors_data_exploration, message=FALSE, warning=FALSE}
+    # gather the data for plotting
+    predictors_data_plot <- predictors_data %>% 
+        gather(key = 'predictor', value = 'prevalence', -LocationID) %>%
+        mutate(predictor = gsub('_AdjPrev', '', predictor))
+
+    # boxplot (log scale on y-axis)
+    predictors_data_plot %>% ggplot(aes(x = predictor, y = prevalence)) +
+        geom_boxplot() +
+        scale_y_log10() +
+        labs(title = 'Predictors Data Distribution',
+             x = 'Predictor',
+             y = 'Prevalence (log scale)') +
+        theme_minimal()
+```
+
+Lets perform Normality Test on the predictors data to check if the data is normally distributed.
+```{r predictors_data_normality_test, message=FALSE, warning=FALSE}
+    # normality test for predictors data
+    predictors_data_normality_test <- predictors_data %>% 
+        gather(key = 'predictor', value = 'prevalence', -LocationID) %>%
+        mutate(predictor = gsub('_AdjPrev', '', predictor)) %>%
+        group_by(predictor) %>%
+        summarize(shapiro_test_p_value = shapiro.test(prevalence)$p.value)
+
+    predictors_data_normality_test
+```
+
+The Shapiro-Wilk test for normality indicates that the predictors data is not normally distributed.
+As the data is valid observations, we will proceed with the analysis without any transformations.
+Given the non-normal distribution of the data, we will use non-parametric tests for the analysis.
+
+We should also check for multicollinearity among the predictors to ensure that the predictors are not highly correlated.
+```{r predictors_data_multicollinearity, message=FALSE, warning=FALSE}
+    library(corrplot)
+    # correlation matrix for predictors data
+    predictors_data_correlation <- predictors_data %>% 
+        select(-LocationID) %>%
+        cor()
+
+    # plot correlation matrix
+    corrplot(predictors_data_correlation, method = 'number', type = 'upper', tl.col = 'black')
+```
+
 
 # Data Analysis
 For our analysis, we theorize that the age-adjusted prevalence of chronic diseases is influenced by:
@@ -469,9 +842,6 @@ We will analyze the influence of the county type (urban or rural) on the age-adj
 
     # visualize the mean age-adjusted prevalence of chronic diseases by urban_rural_classification
     # box plot for each chronic disease column by urban_rural_classification
-    library(ggplot2)
-    library(tidyr)
-
     chronic_diseases_data_long <- chronic_diseases_data %>% pivot_longer(cols = chronic_disease_cols, names_to = 'ChronicDisease', values_to = 'AgeAdjustedPrevalence')
 
     ggplot(chronic_diseases_data_long, aes(x = urban_rural_classification, y = AgeAdjustedPrevalence, fill = urban_rural_classification)) +
@@ -487,6 +857,52 @@ We will analyze the influence of the county type (urban or rural) on the age-adj
     }) %>% bind_rows()
 
     # display the t-test results
+    # display columns without truncation
+    options(width = 120)
     t_test_results
 ```
 
+The p-values from the t-tests indicate that there is a significant difference in the age-adjusted prevalence of chronic diseases between urban and rural counties for all chronic diseases. 
+The mean age-adjusted prevalence of chronic diseases is generally higher in urban counties compared to rural counties.
+
+## Factors Influencing the Age-Adjusted Prevalence of Chronic Diseases
+Next, while controlling for the county type, we will analyze the influence predictor variables on the age-adjusted prevalence of chronic diseases.
+
+Our predictors are:
+    * Access to Health Insurance (ACCESS2_AdjPrev)
+    * Regular Health Checkup (CHECKUP_AdjPrev)
+
+We will analyze the relationship between these predictors and the age-adjusted prevalence of chronic diseases, while controlling for the county type.
+    
+```{r predictors_analysis, message=FALSE, warning=FALSE}
+    # merge the predictors data with the chronic diseases data
+    predictors_chronic_diseases_data <- merge(predictors_data, chronic_diseases_data, by = 'LocationID')
+
+    # create a new column for urban_rural_classification based on urban_rural_code
+    predictors_chronic_diseases_data$urban_rural_classification <- ifelse(predictors_chronic_diseases_data$urban_rural_code %in% c(1, 2, 3, 4), 'Urban', 'Rural')
+
+    # create a linear regression model for each chronic disease column with predictors
+    linear_regression_results <- lapply(chronic_disease_cols, function(col) {
+        lm_model <- lm(predictors_chronic_diseases_data[[col]] ~ ACCESS2_AdjPrev + CHECKUP_AdjPrev + urban_rural_classification, data = predictors_chronic_diseases_data)
+        summary(lm_model)
+    })
+
+    # extract coefficients and p-values from the linear regression models
+    coefficients_p_values <- lapply(linear_regression_results, function(lm_summary) {
+        data.frame(
+            Predictor = rownames(lm_summary$coefficients)[-1],
+            Coefficient = lm_summary$coefficients[-1, 'Estimate'],
+            P_Value = lm_summary$coefficients[-1, 'Pr(>|t|)']
+        )
+    }) %>% bind_rows()
+
+    # display the coefficients and p-values
+    coefficients_p_values
+```
+
+# Conclusions:
+The coefficients and p-values from the linear regression models indicate the following relationships between the predictors and the age-adjusted prevalence of chronic diseases, while controlling for the county type:
+
+* Access to Health Insurance (ACCESS2_AdjPrev) does not have a significant impact on the age-adjusted prevalence of chronic diseases for most chronic diseases.
+* Regular Health Checkup (CHECKUP_AdjPrev) has a significant positive impact on the age-adjusted prevalence of chronic diseases for most chronic diseases.
+* Urban counties have a significantly lower age-adjusted prevalence of chronic diseases compared to rural counties for most chronic diseases.

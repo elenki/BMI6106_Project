@@ -105,6 +105,7 @@ Lets start by loading the data and examining the first few rows.
   </script>
 </div>
 
+
 The dataset contains the following columns:
 
 ```r
@@ -167,19 +168,26 @@ The dataset contains the following columns:
 ## [154] "Geolocation"
 ```
 
-## Features in the dataset
+
+## Descriptive Analysis
 The dataset contains a wide range of features related to chronic diseases, health outcomes, health behaviors, and social determinants of health.
-Here are some of the key features in the dataset:
+We will start by exploring the data and understanding the distribution of key variables.
+We will also identify any missing values and outliers in the dataset.
 
 
 ```r
     library(dplyr)
     library(tidyr)
+    library(ggplot2)
 ```
 
+
 ### US Counties Data
+These are our key columns in the dataset.
+
 The dataset is at the county level and includes information about the state, county name, county FIPS code, total population, and geolocation.
 All observations in the dataset are identified by the following key columns:
+
 
 ```r
     key_cols <- c('StateAbbr', 'StateDesc', 'CountyName', 'CountyFIPS', 'TotalPopulation', 'Geolocation')
@@ -191,6 +199,7 @@ All observations in the dataset are identified by the following key columns:
 {"columns":[{"label":["StateAbbr"],"name":[1],"type":["chr"],"align":["left"]},{"label":["StateDesc"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CountyName"],"name":[3],"type":["chr"],"align":["left"]},{"label":["CountyFIPS"],"name":[4],"type":["chr"],"align":["left"]},{"label":["TotalPopulation"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Geolocation"],"name":[6],"type":["chr"],"align":["left"]}],"data":[{"1":"AL","2":"Alabama","3":"Autauga","4":"01001","5":"59095","6":"POINT (-86.6464395 32.5322367)"},{"1":"AL","2":"Alabama","3":"Bullock","4":"01011","5":"10320","6":"POINT (-85.7172613 32.1017589)"},{"1":"AL","2":"Alabama","3":"Chilton","4":"01021","5":"45274","6":"POINT (-86.7266071 32.8540514)"},{"1":"AL","2":"Alabama","3":"Cleburne","4":"01029","5":"15103","6":"POINT (-85.5161261 33.6719637)"},{"1":"AL","2":"Alabama","3":"DeKalb","4":"01049","5":"71813","6":"POINT (-85.8040207 34.4609148)"},{"1":"AL","2":"Alabama","3":"Lamar","4":"01075","5":"13689","6":"POINT (-88.0874309 33.7870852)"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
+
 
 We will start by preparing counties dataset, as this is the granularity level for all our data.
 
@@ -210,6 +219,7 @@ We will start by preparing counties dataset, as this is the granularity level fo
 ##               0
 ```
 As we can see, no missing values are present in the counties dataset.
+
 
 For our analysis, we will enrich the counties dataset with additional information about the location type - whether it is a city, town, or rural area.
 This will be useful for understanding the context of the counties and their health outcomes.
@@ -355,17 +365,29 @@ The dataset includes several features related to chronic diseases such as arthri
 Here are some of the key features related to chronic diseases:
 
 ```r
-    chronic_disease_cols <- c('ARTHRITIS_AdjPrev', 'BPHIGH_AdjPrev', 'CANCER_AdjPrev', 'CASTHMA_AdjPrev', 
-                                'CERVICAL_AdjPrev', 'CHD_AdjPrev', 'COPD_AdjPrev', 'DEPRESSION_AdjPrev', 
-                                'DIABETES_AdjPrev', 'KIDNEY_AdjPrev', 'STROKE_AdjPrev')
+    chronic_disease_cols <- c('ARTHRITIS_AdjPrev', 'BPHIGH_AdjPrev', 'CANCER_AdjPrev', 'CASTHMA_AdjPrev', 'CHD_AdjPrev', 
+                                'COPD_AdjPrev', 'DEPRESSION_AdjPrev', 'DIABETES_AdjPrev', 'KIDNEY_AdjPrev', 'STROKE_AdjPrev')
     places_county_2023[chronic_disease_cols] %>% head()
 ```
 
 <div data-pagedtable="false">
   <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["ARTHRITIS_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["BPHIGH_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["CANCER_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["CASTHMA_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["CERVICAL_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["CHD_AdjPrev"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["COPD_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["DEPRESSION_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["DIABETES_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["KIDNEY_AdjPrev"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["STROKE_AdjPrev"],"name":[11],"type":["dbl"],"align":["right"]}],"data":[{"1":"28.2","2":"37.2","3":"6.3","4":"10.2","5":"84.3","6":"5.7","7":"6.8","8":"22.7","9":"10.7","10":"2.9","11":"3.0"},{"1":"30.0","2":"48.9","3":"5.5","4":"11.6","5":"82.9","6":"7.9","7":"9.8","8":"20.2","9":"18.7","10":"4.1","11":"5.1"},{"1":"29.0","2":"37.5","3":"6.3","4":"10.4","5":"81.6","6":"6.5","7":"8.3","8":"24.3","9":"11.5","10":"3.0","11":"3.3"},{"1":"28.7","2":"35.7","3":"6.4","4":"10.5","5":"82.4","6":"6.5","7":"8.5","8":"26.0","9":"11.0","10":"3.0","11":"3.2"},{"1":"30.2","2":"36.7","3":"6.3","4":"10.8","5":"80.0","6":"7.1","7":"9.5","8":"25.8","9":"12.5","10":"3.2","11":"3.5"},{"1":"28.9","2":"37.4","3":"6.3","4":"10.6","5":"82.0","6":"6.6","7":"8.6","8":"25.1","9":"11.5","10":"3.1","11":"3.4"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["ARTHRITIS_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["BPHIGH_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["CANCER_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["CASTHMA_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["CHD_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["COPD_AdjPrev"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["DEPRESSION_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["DIABETES_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["KIDNEY_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["STROKE_AdjPrev"],"name":[10],"type":["dbl"],"align":["right"]}],"data":[{"1":"28.2","2":"37.2","3":"6.3","4":"10.2","5":"5.7","6":"6.8","7":"22.7","8":"10.7","9":"2.9","10":"3.0"},{"1":"30.0","2":"48.9","3":"5.5","4":"11.6","5":"7.9","6":"9.8","7":"20.2","8":"18.7","9":"4.1","10":"5.1"},{"1":"29.0","2":"37.5","3":"6.3","4":"10.4","5":"6.5","6":"8.3","7":"24.3","8":"11.5","9":"3.0","10":"3.3"},{"1":"28.7","2":"35.7","3":"6.4","4":"10.5","5":"6.5","6":"8.5","7":"26.0","8":"11.0","9":"3.0","10":"3.2"},{"1":"30.2","2":"36.7","3":"6.3","4":"10.8","5":"7.1","6":"9.5","7":"25.8","8":"12.5","9":"3.2","10":"3.5"},{"1":"28.9","2":"37.4","3":"6.3","4":"10.6","5":"6.6","6":"8.6","7":"25.1","8":"11.5","9":"3.1","10":"3.4"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
+
+Column descriptions:
+
+* ARTHRITIS_AdjPrev: Model-based estimate for age-adjusted prevalence of arthritis among adults aged >=18 years, 2021
+* BPHIGH_AdjPrev: Model-based estimate for age-adjusted prevalence of high blood pressure among adults aged >=18 years, 2021
+* CANCER_AdjPrev: Model-based estimate for age-adjusted prevalence of cancer (excluding skin cancer) among adults aged >=18 years, 2021
+* CASTHMA_AdjPrev: Model-based estimate for age-adjusted prevalence of current asthma among adults aged >=18 years, 2021
+* CHD_AdjPrev: Model-based estimate for age-adjusted prevalence of coronary heart disease among adults aged >=18 years, 2021
+* COPD_AdjPrev: Model-based estimate for age-adjusted prevalence of chronic obstructive pulmonary disease among adults aged >=18 years, 2021
+* DEPRESSION_AdjPrev: Model-based estimate for age-adjusted prevalence of depression among adults aged >=18 years, 2021
+* DIABETES_AdjPrev: Model-based estimate for age-adjusted prevalence of diagnosed diabetes among adults aged >=18 years, 2021
+* KIDNEY_AdjPrev: Model-based estimate for age-adjusted prevalence of chronic kidney disease among adults aged >=18 years, 2021
+* STROKE_AdjPrev: Model-based estimate for age-adjusted prevalence of stroke among adults aged >=18 years, 2021
 
 Next, we will prepare the chronic disease data by filtering the required columns and handling missing values.
 
@@ -385,10 +407,10 @@ Next, we will prepare the chronic disease data by filtering the required columns
 ```
 ##  ARTHRITIS_AdjPrev     BPHIGH_AdjPrev     CANCER_AdjPrev    CASTHMA_AdjPrev 
 ##                 67                 67                 67                 67 
-##   CERVICAL_AdjPrev        CHD_AdjPrev       COPD_AdjPrev DEPRESSION_AdjPrev 
-##                  0                 67                 67                 67 
-##   DIABETES_AdjPrev     KIDNEY_AdjPrev     STROKE_AdjPrev         LocationID 
-##                 67                 67                 67                  0
+##        CHD_AdjPrev       COPD_AdjPrev DEPRESSION_AdjPrev   DIABETES_AdjPrev 
+##                 67                 67                 67                 67 
+##     KIDNEY_AdjPrev     STROKE_AdjPrev         LocationID 
+##                 67                 67                  0
 ```
 
 ```r
@@ -401,9 +423,138 @@ Next, we will prepare the chronic disease data by filtering the required columns
 
 <div data-pagedtable="false">
   <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["ARTHRITIS_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["BPHIGH_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["CANCER_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["CASTHMA_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["CERVICAL_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["CHD_AdjPrev"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["COPD_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["DEPRESSION_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["DIABETES_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["KIDNEY_AdjPrev"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["STROKE_AdjPrev"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[12],"type":["chr"],"align":["left"]}],"data":[{"1":"28.2","2":"37.2","3":"6.3","4":"10.2","5":"84.3","6":"5.7","7":"6.8","8":"22.7","9":"10.7","10":"2.9","11":"3.0","12":"AL_01001"},{"1":"30.0","2":"48.9","3":"5.5","4":"11.6","5":"82.9","6":"7.9","7":"9.8","8":"20.2","9":"18.7","10":"4.1","11":"5.1","12":"AL_01011"},{"1":"29.0","2":"37.5","3":"6.3","4":"10.4","5":"81.6","6":"6.5","7":"8.3","8":"24.3","9":"11.5","10":"3.0","11":"3.3","12":"AL_01021"},{"1":"28.7","2":"35.7","3":"6.4","4":"10.5","5":"82.4","6":"6.5","7":"8.5","8":"26.0","9":"11.0","10":"3.0","11":"3.2","12":"AL_01029"},{"1":"30.2","2":"36.7","3":"6.3","4":"10.8","5":"80.0","6":"7.1","7":"9.5","8":"25.8","9":"12.5","10":"3.2","11":"3.5","12":"AL_01049"},{"1":"28.9","2":"37.4","3":"6.3","4":"10.6","5":"82.0","6":"6.6","7":"8.6","8":"25.1","9":"11.5","10":"3.1","11":"3.4","12":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["ARTHRITIS_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["BPHIGH_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["CANCER_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["CASTHMA_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["CHD_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["COPD_AdjPrev"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["DEPRESSION_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["DIABETES_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["KIDNEY_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["STROKE_AdjPrev"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[11],"type":["chr"],"align":["left"]}],"data":[{"1":"28.2","2":"37.2","3":"6.3","4":"10.2","5":"5.7","6":"6.8","7":"22.7","8":"10.7","9":"2.9","10":"3.0","11":"AL_01001"},{"1":"30.0","2":"48.9","3":"5.5","4":"11.6","5":"7.9","6":"9.8","7":"20.2","8":"18.7","9":"4.1","10":"5.1","11":"AL_01011"},{"1":"29.0","2":"37.5","3":"6.3","4":"10.4","5":"6.5","6":"8.3","7":"24.3","8":"11.5","9":"3.0","10":"3.3","11":"AL_01021"},{"1":"28.7","2":"35.7","3":"6.4","4":"10.5","5":"6.5","6":"8.5","7":"26.0","8":"11.0","9":"3.0","10":"3.2","11":"AL_01029"},{"1":"30.2","2":"36.7","3":"6.3","4":"10.8","5":"7.1","6":"9.5","7":"25.8","8":"12.5","9":"3.2","10":"3.5","11":"AL_01049"},{"1":"28.9","2":"37.4","3":"6.3","4":"10.6","5":"6.6","6":"8.6","7":"25.1","8":"11.5","9":"3.1","10":"3.4","11":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
+
+#### Distribution
+Before we proceed with the analysis, we will check the normality of the chronic disease data.
+This is important as many statistical tests assume that the data is normally distributed.
+We will start by visualizing the distribution of the data using histograms and Q-Q plots.
+
+```r
+    # distribution of chronic disease data
+    chronic_disease_data %>% gather(key = 'disease', value = 'prevalence', -LocationID) %>%
+        ggplot(aes(x = prevalence)) +
+        geom_histogram(bins = 20) +
+        facet_wrap(~disease, scales = 'free') +
+        theme_minimal()
+```
+
+![](BMI6106_Spring2024_Project_files/figure-html/chronic_disease_data_distribution-1.png)<!-- -->
+
+#### Normality
+
+```r
+    # normality test for chronic disease data
+    chronic_disease_data %>% gather(key = 'disease', value = 'prevalence', -LocationID) %>%
+        ggplot(aes(sample = prevalence)) +
+        stat_qq() +
+        facet_wrap(~disease, scales = 'free') +
+        theme_minimal()
+```
+
+![](BMI6106_Spring2024_Project_files/figure-html/chronic_disease_data_normality-1.png)<!-- -->
+
+The Q-Q plots show that the data for each chronic disease is not normally distributed.
+We can confirm this by performing a Shapiro-Wilk test for normality.
+
+```r
+    # normality test for chronic disease data
+    normality_test <- chronic_disease_data %>% gather(key = 'disease', value = 'prevalence', -LocationID) %>%
+        group_by(disease) %>%
+        summarise(p_value = shapiro.test(prevalence)$p.value)
+
+    normality_test
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["disease"],"name":[1],"type":["chr"],"align":["left"]},{"label":["p_value"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"ARTHRITIS_AdjPrev","2":"2.506004e-04"},{"1":"BPHIGH_AdjPrev","2":"6.184426e-25"},{"1":"CANCER_AdjPrev","2":"1.934598e-50"},{"1":"CASTHMA_AdjPrev","2":"2.473584e-08"},{"1":"CHD_AdjPrev","2":"9.124305e-23"},{"1":"COPD_AdjPrev","2":"1.566150e-23"},{"1":"DEPRESSION_AdjPrev","2":"1.161262e-03"},{"1":"DIABETES_AdjPrev","2":"1.842578e-32"},{"1":"KIDNEY_AdjPrev","2":"1.167671e-38"},{"1":"STROKE_AdjPrev","2":"2.639553e-39"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+The p-values from the Shapiro-Wilk test are all less than 0.05, indicating that the data is not normally distributed.
+This means that we should be cautious when applying statistical tests that assume normality.
+
+#### Outliers
+Outliers can also affect the results of statistical tests and models. 
+We will check for outliers in the chronic disease data using boxplots and z-scores.
+
+```r
+    # boxplot for chronic disease data
+    # for labels, strip the '_AdjPrev' suffix, create new data frame for plotting
+    chronic_disease_data_plot <- chronic_disease_data %>% 
+        gather(key = 'disease', value = 'prevalence', -LocationID) %>%
+        mutate(disease = gsub('_AdjPrev', '', disease))
+
+    # boxplot (log scale on y-axis)
+    chronic_disease_data_plot %>% ggplot(aes(x = disease, y = prevalence)) +
+        geom_boxplot() +
+        scale_y_log10() +
+        labs(title = 'Chronic Disease Prevalence Distribution',
+             x = 'Disease',
+             y = 'Prevalence (log scale)') +
+        theme_minimal()
+```
+
+![](BMI6106_Spring2024_Project_files/figure-html/chronic_disease_data_exploration-1.png)<!-- -->
+
+```r
+    # outlier detection
+    # calculate z-scores for each disease and location
+    # may need to pivot the data to calculate z-scores
+    chronic_disease_data_zscores <- chronic_disease_data %>% 
+        pivot_longer(cols = -LocationID, names_to = 'disease', values_to = 'prevalence') %>%
+        group_by(disease) %>%
+        mutate(zscore = (prevalence - mean(prevalence)) / sd(prevalence))
+
+    # plot z-scores
+    # for labels, strip the '_AdjPrev' suffix, create new data frame for plotting
+    chronic_disease_data_zscores_plot <- chronic_disease_data_zscores %>% 
+        mutate(disease = gsub('_AdjPrev', '', disease))
+
+    # boxplot of z-scores
+    chronic_disease_data_zscores_plot %>% ggplot(aes(x = disease, y = zscore)) +
+        geom_boxplot() +
+        labs(title = 'Chronic Disease Prevalence Z-Scores',
+             x = 'Disease',
+             y = 'Z-Score') +
+        theme_minimal()
+```
+
+![](BMI6106_Spring2024_Project_files/figure-html/chronic_disease_data_exploration-2.png)<!-- -->
+
+```r
+    # for each disease, calculate the number of outliers and percentage of total
+    # using z-score threshold of 3
+    outliers <- chronic_disease_data_zscores %>% 
+        group_by(disease) %>%
+        summarize(outliers = sum(abs(zscore) > 3),
+                  total = n(),
+                  percentage = outliers / total * 100)
+
+    outliers
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["disease"],"name":[1],"type":["chr"],"align":["left"]},{"label":["outliers"],"name":[2],"type":["int"],"align":["right"]},{"label":["total"],"name":[3],"type":["int"],"align":["right"]},{"label":["percentage"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"ARTHRITIS_AdjPrev","2":"11","3":"3076","4":"0.3576073"},{"1":"BPHIGH_AdjPrev","2":"26","3":"3076","4":"0.8452536"},{"1":"CANCER_AdjPrev","2":"53","3":"3076","4":"1.7230169"},{"1":"CASTHMA_AdjPrev","2":"12","3":"3076","4":"0.3901170"},{"1":"CHD_AdjPrev","2":"21","3":"3076","4":"0.6827048"},{"1":"COPD_AdjPrev","2":"28","3":"3076","4":"0.9102731"},{"1":"DEPRESSION_AdjPrev","2":"5","3":"3076","4":"0.1625488"},{"1":"DIABETES_AdjPrev","2":"37","3":"3076","4":"1.2028609"},{"1":"KIDNEY_AdjPrev","2":"33","3":"3076","4":"1.0728218"},{"1":"STROKE_AdjPrev","2":"45","3":"3076","4":"1.4629389"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+The boxplots show the distribution of chronic disease prevalence for each disease, with some diseases having a higher prevalence than others. 
+The z-score boxplots show the presence of outliers for each disease, with some diseases having more outliers than others. 
+The table summarizes the number of outliers and the percentage of total observations that are considered outliers for each disease.
+
+Based on the z-score threshold of 3, the percentage of outliers ranges from 0.16% to 1.72% across different diseases.
+Overall, the chronic disease data shows variations in prevalence and the presence of outliers for some diseases.
+
+Strategy for Handling Outliers:
+- For the analysis, we will keep the outliers in the dataset as they represent valid data points.
+- We will consider the outliers during the analysis and interpretation of results.
+
+Finally, as all the chronic_disease_cols are our target variables, we will not perform any feature selection or dimensionality reduction on this dataset.
+Considering the non-normal distribution of the data, we will use non-parametric tests for the analysis.
 
 ### Health Status Data
 The dataset also includes features related to general health status, mental health, and physical health.
@@ -454,6 +605,213 @@ Next, we will prepare the health status data by filtering the required columns a
   </script>
 </div>
 
+Let's explore the distribution, outliers, and summary statistics of the health status data using boxplots.
+
+```r
+    # boxplot for health status data
+    # for labels, strip the '_AdjPrev' suffix, create new data frame for plotting
+    health_status_data_plot <- health_status_data %>% 
+        gather(key = 'status', value = 'prevalence', -LocationID) %>%
+        mutate(status = gsub('_AdjPrev', '', status))
+
+    # boxplot (log scale on y-axis)
+    health_status_data_plot %>% ggplot(aes(x = status, y = prevalence)) +
+        geom_boxplot() +
+        scale_y_log10() +
+        labs(title = 'Health Status Prevalence Distribution',
+             x = 'Health Status',
+             y = 'Prevalence (log scale)') +
+        theme_minimal()
+```
+
+![](BMI6106_Spring2024_Project_files/figure-html/health_status_data_exploration-1.png)<!-- -->
+
+```r
+    # outlier detection
+    # calculate z-scores for each health status and location
+    # may need to pivot the data to calculate z-scores
+    health_status_data_zscores <- health_status_data %>% 
+        pivot_longer(cols = -LocationID, names_to = 'status', values_to = 'prevalence') %>%
+        group_by(status) %>%
+        mutate(zscore = (prevalence - mean(prevalence)) / sd(prevalence))
+
+    # plot z-scores
+    # for labels, strip the '_AdjPrev' suffix, create new data frame for plotting
+    health_status_data_zscores_plot <- health_status_data_zscores %>% 
+        mutate(status = gsub('_AdjPrev', '', status))
+
+    # boxplot of z-scores
+    health_status_data_zscores_plot %>% ggplot(aes(x = status, y = zscore)) +
+        geom_boxplot() +
+        labs(title = 'Health Status Prevalence Z-Scores',
+             x = 'Health Status',
+             y = 'Z-Score') +
+        theme_minimal()
+```
+
+![](BMI6106_Spring2024_Project_files/figure-html/health_status_data_exploration-2.png)<!-- -->
+
+```r
+    # for each health status, calculate the number of outliers and percentage of total
+    # using z-score threshold of 3
+    outliers <- health_status_data_zscores %>% 
+        group_by(status) %>%
+        summarize(outliers = sum(abs(zscore) > 3),
+                  total = n(),
+                  percentage = outliers / total * 100)
+
+    outliers
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["status"],"name":[1],"type":["chr"],"align":["left"]},{"label":["outliers"],"name":[2],"type":["int"],"align":["right"]},{"label":["total"],"name":[3],"type":["int"],"align":["right"]},{"label":["percentage"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"GHLTH_AdjPrev","2":"20","3":"3076","4":"0.6501951"},{"1":"MHLTH_AdjPrev","2":"6","3":"3076","4":"0.1950585"},{"1":"PHLTH_AdjPrev","2":"18","3":"3076","4":"0.5851756"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+The outliers range from 0.19% to 0.65% across different health status indicators.
+This indicates that the health status data has relatively few outliers compared to the chronic disease data.
+
+Strategy for Handling Outliers:
+- Similar to the chronic disease data, we will keep the outliers in the dataset as they represent valid data points.
+- We will consider the outliers during the analysis and interpretation of results.
+
+Collinearity check is important to ensure that the predictors are not highly correlated with each other.
+We will calculate the correlation matrix for the health status data to identify any potential collinearity issues.
+
+```r
+    # calculate correlation matrix for health status data
+    health_status_correlation <- health_status_data %>% select(-LocationID) %>% cor()
+
+    # display correlation matrix
+    health_status_correlation
+```
+
+```
+##               GHLTH_AdjPrev MHLTH_AdjPrev PHLTH_AdjPrev
+## GHLTH_AdjPrev     1.0000000     0.8122762     0.9493872
+## MHLTH_AdjPrev     0.8122762     1.0000000     0.9155974
+## PHLTH_AdjPrev     0.9493872     0.9155974     1.0000000
+```
+The correlation matrix shows that the health status indicators are highly correlated with each other.
+This high correlation is expected as the indicators are related to different aspects of health status.
+We can combine these indicators into a single health status index or score.
+
+Next, we will create a health status index by combining the general health, mental health, and physical health indicators.
+
+```r
+    # create a health status index by averaging the general health, mental health, and physical health indicators
+    health_status_data$HealthStatusIndex <- rowMeans(health_status_data %>% select(contains('AdjPrev')))
+
+    # display the health status data with the index
+    head(health_status_data)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["GHLTH_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["MHLTH_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["PHLTH_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[4],"type":["chr"],"align":["left"]},{"label":["HealthStatusIndex"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"17.3","2":"18.0","3":"11.7","4":"AL_01001","5":"15.66667"},{"1":"30.7","2":"20.5","3":"16.6","4":"AL_01011","5":"22.60000"},{"1":"20.6","2":"19.7","3":"13.6","4":"AL_01021","5":"17.96667"},{"1":"19.8","2":"19.9","3":"13.6","4":"AL_01029","5":"17.76667"},{"1":"23.1","2":"20.7","3":"15.1","4":"AL_01049","5":"19.63333"},{"1":"20.7","2":"20.1","3":"13.8","4":"AL_01075","5":"18.20000"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+The health status index provides a single measure that combines the general health, mental health, and physical health indicators.
+
+### Preventive Care Data (Potential Predictors)
+The dataset includes features related to preventive care such as mammography screening, regular checkups, etc.
+
+```r
+    preventive_care_cols <- c('BPMED_AdjPrev', 'CERVICAL_AdjPrev', 'CHECKUP_AdjPrev', 'CHOLSCREEN_AdjPrev', 'COLON_SCREEN_AdjPrev')
+    places_county_2023[preventive_care_cols] %>% head()
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["BPMED_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["CERVICAL_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["CHECKUP_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["CHOLSCREEN_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["COLON_SCREEN_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"65.3","2":"84.3","3":"76.0","4":"85.1","5":"71.5"},{"1":"70.3","2":"82.9","3":"78.2","4":"82.1","5":"69.7"},{"1":"64.4","2":"81.6","3":"72.7","4":"83.0","5":"70.2"},{"1":"63.4","2":"82.4","3":"73.7","4":"82.8","5":"70.5"},{"1":"64.4","2":"80.0","3":"71.8","4":"81.7","5":"68.3"},{"1":"64.2","2":"82.0","3":"74.0","4":"82.8","5":"71.1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+Next, we will prepare the preventive care data by filtering the required columns and handling missing values.
+
+```r
+    # for this dataset we will select the key_cols and preventive_care_cols
+    preventive_care_data <- places_county_2023[key_cols %>% union(preventive_care_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    preventive_care_data$LocationID <- paste(preventive_care_data$StateAbbr, preventive_care_data$CountyFIPS, sep = '_')
+    preventive_care_data <- preventive_care_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- sapply(preventive_care_data, function(x) sum(is.na(x)))
+    missing_values
+```
+
+```
+##        BPMED_AdjPrev     CERVICAL_AdjPrev      CHECKUP_AdjPrev 
+##                   67                    0                   67 
+##   CHOLSCREEN_AdjPrev COLON_SCREEN_AdjPrev           LocationID 
+##                   67                    0                    0
+```
+
+```r
+    # as the number of missing values is small, we will drop the rows with missing values
+    preventive_care_data <- preventive_care_data %>% drop_na()
+
+    # display the preventive care data
+    head(preventive_care_data)
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["BPMED_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["CERVICAL_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["CHECKUP_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["CHOLSCREEN_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["COLON_SCREEN_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[6],"type":["chr"],"align":["left"]}],"data":[{"1":"65.3","2":"84.3","3":"76.0","4":"85.1","5":"71.5","6":"AL_01001"},{"1":"70.3","2":"82.9","3":"78.2","4":"82.1","5":"69.7","6":"AL_01011"},{"1":"64.4","2":"81.6","3":"72.7","4":"83.0","5":"70.2","6":"AL_01021"},{"1":"63.4","2":"82.4","3":"73.7","4":"82.8","5":"70.5","6":"AL_01029"},{"1":"64.4","2":"80.0","3":"71.8","4":"81.7","5":"68.3","6":"AL_01049"},{"1":"64.2","2":"82.0","3":"74.0","4":"82.8","5":"71.1","6":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+Let's explore the distribution of preventive care indicators using boxplots.
+
+```r
+    # gather the data for plotting
+    preventive_care_data_plot <- preventive_care_data %>% 
+        gather(key = 'care', value = 'prevalence', -LocationID) %>%
+        mutate(care = gsub('_AdjPrev', '', care))
+
+    # boxplot (log scale on y-axis)
+    preventive_care_data_plot %>% ggplot(aes(x = care, y = prevalence)) +
+        geom_boxplot() +
+        scale_y_log10() +
+        labs(title = 'Preventive Care Prevalence Distribution',
+             x = 'Preventive Care',
+             y = 'Prevalence (log scale)') +
+        theme_minimal()
+```
+
+![](BMI6106_Spring2024_Project_files/figure-html/preventive_care_data_visualization-1.png)<!-- -->
+
+The boxplots show the distribution of preventive care indicators across different counties.
+The prevalence of preventive care indicators varies, with some indicators having higher median values than others.
+
+Next, we will calculate the correlation matrix for the preventive care data to identify any potential collinearity issues.
+
+```r
+    # calculate correlation matrix for preventive care data
+    preventive_care_correlation <- preventive_care_data %>% select(-LocationID) %>% cor()
+
+    # display correlation matrix
+    preventive_care_correlation
+```
+
+```
+##                      BPMED_AdjPrev CERVICAL_AdjPrev CHECKUP_AdjPrev
+## BPMED_AdjPrev           1.00000000       0.04324499       0.7623895
+## CERVICAL_AdjPrev        0.04324499       1.00000000       0.2887087
+## CHECKUP_AdjPrev         0.76238945       0.28870867       1.0000000
+## CHOLSCREEN_AdjPrev      0.27872238       0.44391767       0.4061088
+## COLON_SCREEN_AdjPrev    0.11973147       0.69523500       0.3783285
+##                      CHOLSCREEN_AdjPrev COLON_SCREEN_AdjPrev
+## BPMED_AdjPrev                 0.2787224            0.1197315
+## CERVICAL_AdjPrev              0.4439177            0.6952350
+## CHECKUP_AdjPrev               0.4061088            0.3783285
+## CHOLSCREEN_AdjPrev            1.0000000            0.4264531
+## COLON_SCREEN_AdjPrev          0.4264531            1.0000000
+```
+The correlation matrix shows that the preventive care indicators are moderately correlated with each other.
+This moderate correlation is expected as the indicators are related to different aspects of preventive care.
+
 ### Risk Factors Data
 The dataset includes features related to risk factors for chronic diseases such as high cholesterol and obesity.
 Here are some of the key features related to risk factors:
@@ -502,6 +860,92 @@ Next, we will prepare the risk factors data by filtering the required columns an
 {"columns":[{"label":["HIGHCHOL_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["OBESITY_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[3],"type":["chr"],"align":["left"]}],"data":[{"1":"32.1","2":"38.9","3":"AL_01001"},{"1":"33.4","2":"48.9","3":"AL_01011"},{"1":"33.8","2":"42.3","3":"AL_01021"},{"1":"33.4","2":"36.1","3":"AL_01029"},{"1":"34.5","2":"41.0","3":"AL_01049"},{"1":"33.1","2":"38.7","3":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
+
+Let's explore the distribution, outliers, and summary statistics of the risk factors data using boxplots.
+
+```r
+    # boxplot for risk factors data
+    # for labels, strip the '_AdjPrev' suffix, create new data frame for plotting
+    risk_factors_data_plot <- risk_factors_data %>% 
+        gather(key = 'factor', value = 'prevalence', -LocationID) %>%
+        mutate(factor = gsub('_AdjPrev', '', factor))
+
+    # boxplot (log scale on y-axis)
+    risk_factors_data_plot %>% ggplot(aes(x = factor, y = prevalence)) +
+        geom_boxplot() +
+        scale_y_log10() +
+        labs(title = 'Risk Factors Prevalence Distribution',
+             x = 'Risk Factor',
+             y = 'Prevalence (log scale)') +
+        theme_minimal()
+```
+
+![](BMI6106_Spring2024_Project_files/figure-html/risk_factors_data_exploration-1.png)<!-- -->
+
+```r
+    # outlier detection
+    # calculate z-scores for each risk factor and location
+    # may need to pivot the data to calculate z-scores
+    risk_factors_data_zscores <- risk_factors_data %>% 
+        pivot_longer(cols = -LocationID, names_to = 'factor', values_to = 'prevalence') %>%
+        group_by(factor) %>%
+        mutate(zscore = (prevalence - mean(prevalence)) / sd(prevalence))
+
+    # plot z-scores
+    # for labels, strip the '_AdjPrev' suffix, create new data frame for plotting
+    risk_factors_data_zscores_plot <- risk_factors_data_zscores %>% 
+        mutate(factor = gsub('_AdjPrev', '', factor))
+
+    # boxplot of z-scores
+    risk_factors_data_zscores_plot %>% ggplot(aes(x = factor, y = zscore)) +
+        geom_boxplot() +
+        labs(title = 'Risk Factors Prevalence Z-Scores',
+             x = 'Risk Factor',
+             y = 'Z-Score') +
+        theme_minimal()
+```
+
+![](BMI6106_Spring2024_Project_files/figure-html/risk_factors_data_exploration-2.png)<!-- -->
+
+```r
+    # for each risk factor, calculate the number of outliers and percentage of total
+    # using z-score threshold of 3
+    outliers <- risk_factors_data_zscores %>% 
+        group_by(factor) %>%
+        summarize(outliers = sum(abs(zscore) > 3),
+                  total = n(),
+                  percentage = outliers / total * 100)
+
+    outliers
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["factor"],"name":[1],"type":["chr"],"align":["left"]},{"label":["outliers"],"name":[2],"type":["int"],"align":["right"]},{"label":["total"],"name":[3],"type":["int"],"align":["right"]},{"label":["percentage"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"HIGHCHOL_AdjPrev","2":"1","3":"3076","4":"0.03250975"},{"1":"OBESITY_AdjPrev","2":"28","3":"3076","4":"0.91027308"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+We only have 1 outlier for 'HIGHCHOL_AdjPrev' and 0.91% outliers for 'OBESITY_AdjPrev'.
+This indicates that the risk factors data has relatively few outliers.
+We will keep the outliers in the dataset and consider them during the analysis.
+
+Collinearity Check for Risk Factors Data
+
+```r
+    # calculate correlation matrix for risk factors data
+    risk_factors_correlation <- risk_factors_data %>% select(-LocationID) %>% cor()
+
+    # display correlation matrix
+    risk_factors_correlation
+```
+
+```
+##                  HIGHCHOL_AdjPrev OBESITY_AdjPrev
+## HIGHCHOL_AdjPrev        1.0000000       0.4505985
+## OBESITY_AdjPrev         0.4505985       1.0000000
+```
+The correlation matrix shows a moderate positive correlation between 'HIGHCHOL_AdjPrev' and 'OBESITY_AdjPrev'.
+This indicates that there is some collinearity between these two risk factors.
+
 
 ### Disabilities Data
 The dataset includes features related to disabilities such as disability status and disability prevalence.
@@ -649,55 +1093,6 @@ Next, we will prepare the health behaviors data by filtering the required column
   </script>
 </div>
 
-### Preventive Care Data
-The dataset includes features related to preventive care such as mammography screening, regular checkups, etc.
-
-```r
-    preventive_care_cols <- c('BPMED_AdjPrev', 'CHECKUP_AdjPrev', 'CHOLSCREEN_AdjPrev', 'COLON_SCREEN_AdjPrev')
-    places_county_2023[preventive_care_cols] %>% head()
-```
-
-<div data-pagedtable="false">
-  <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["BPMED_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["CHECKUP_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["CHOLSCREEN_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["COLON_SCREEN_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"65.3","2":"76.0","3":"85.1","4":"71.5"},{"1":"70.3","2":"78.2","3":"82.1","4":"69.7"},{"1":"64.4","2":"72.7","3":"83.0","4":"70.2"},{"1":"63.4","2":"73.7","3":"82.8","4":"70.5"},{"1":"64.4","2":"71.8","3":"81.7","4":"68.3"},{"1":"64.2","2":"74.0","3":"82.8","4":"71.1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-Next, we will prepare the preventive care data by filtering the required columns and handling missing values.
-
-```r
-    # for this dataset we will select the key_cols and preventive_care_cols
-    preventive_care_data <- places_county_2023[key_cols %>% union(preventive_care_cols)] %>% distinct()
-
-    # create a LocationID column and drop key_cols
-    preventive_care_data$LocationID <- paste(preventive_care_data$StateAbbr, preventive_care_data$CountyFIPS, sep = '_')
-    preventive_care_data <- preventive_care_data %>% select(-key_cols)
-
-    # check for missing values
-    missing_values <- sapply(preventive_care_data, function(x) sum(is.na(x)))
-    missing_values
-```
-
-```
-##        BPMED_AdjPrev      CHECKUP_AdjPrev   CHOLSCREEN_AdjPrev 
-##                   67                   67                   67 
-## COLON_SCREEN_AdjPrev           LocationID 
-##                    0                    0
-```
-
-```r
-    # as the number of missing values is small, we will drop the rows with missing values
-    preventive_care_data <- preventive_care_data %>% drop_na()
-
-    # display the preventive care data
-    head(preventive_care_data)
-```
-
-<div data-pagedtable="false">
-  <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["BPMED_AdjPrev"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["CHECKUP_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["CHOLSCREEN_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["COLON_SCREEN_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["LocationID"],"name":[5],"type":["chr"],"align":["left"]}],"data":[{"1":"65.3","2":"76.0","3":"85.1","4":"71.5","5":"AL_01001"},{"1":"70.3","2":"78.2","3":"82.1","4":"69.7","5":"AL_01011"},{"1":"64.4","2":"72.7","3":"83.0","4":"70.2","5":"AL_01021"},{"1":"63.4","2":"73.7","3":"82.8","4":"70.5","5":"AL_01029"},{"1":"64.4","2":"71.8","3":"81.7","4":"68.3","5":"AL_01049"},{"1":"64.2","2":"74.0","3":"82.8","4":"71.1","5":"AL_01075"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-
 ### Social Determinants Data
 We have only one feature related to social determinants of health in the dataset, which is access to health insurance.
 
@@ -746,6 +1141,105 @@ Next, we will prepare the social determinants data by filtering the required col
   </script>
 </div>
 
+
+## Predictors Data
+Based on above data exploration, we have identified the following predictors that can be used to predict the health outcomes:
+* Access to Health Insurance
+* Regular Health Checkup
+
+We will prepare the predictors data by filtering the required columns and handling missing values.
+
+```r
+    # for this dataset we will select the key_cols and predictors_cols
+    predictors_cols <- c('ACCESS2_AdjPrev', 'CHECKUP_AdjPrev')
+    predictors_data <- places_county_2023[key_cols %>% union(predictors_cols)] %>% distinct()
+
+    # create a LocationID column and drop key_cols
+    predictors_data$LocationID <- paste(predictors_data$StateAbbr, predictors_data$CountyFIPS, sep = '_')
+    predictors_data <- predictors_data %>% select(-key_cols)
+
+    # check for missing values
+    missing_values <- predictors_data %>% summarise_all(~sum(is.na(.)))
+    missing_values
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["ACCESS2_AdjPrev"],"name":[1],"type":["int"],"align":["right"]},{"label":["CHECKUP_AdjPrev"],"name":[2],"type":["int"],"align":["right"]},{"label":["LocationID"],"name":[3],"type":["int"],"align":["right"]}],"data":[{"1":"67","2":"67","3":"0"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+```r
+    # we have very few missing values, we can safely remove them
+    predictors_data <- predictors_data %>% drop_na()
+
+    # check for missing values after removing
+    missing_values_after <- predictors_data %>% summarise_all(~sum(is.na(.)))
+```
+
+The predictors data has been prepared by selecting the required columns, creating a LocationID column, and handling missing values.
+There were very few missing values, which have been removed from the dataset.
+
+Lets analyze the predictors data to understand the distribution of the variables and identify any potential issues.
+First, lets look at the distribution of the predictors data.
+
+```r
+    # gather the data for plotting
+    predictors_data_plot <- predictors_data %>% 
+        gather(key = 'predictor', value = 'prevalence', -LocationID) %>%
+        mutate(predictor = gsub('_AdjPrev', '', predictor))
+
+    # boxplot (log scale on y-axis)
+    predictors_data_plot %>% ggplot(aes(x = predictor, y = prevalence)) +
+        geom_boxplot() +
+        scale_y_log10() +
+        labs(title = 'Predictors Data Distribution',
+             x = 'Predictor',
+             y = 'Prevalence (log scale)') +
+        theme_minimal()
+```
+
+![](BMI6106_Spring2024_Project_files/figure-html/predictors_data_exploration-1.png)<!-- -->
+
+Lets perform Normality Test on the predictors data to check if the data is normally distributed.
+
+```r
+    # normality test for predictors data
+    predictors_data_normality_test <- predictors_data %>% 
+        gather(key = 'predictor', value = 'prevalence', -LocationID) %>%
+        mutate(predictor = gsub('_AdjPrev', '', predictor)) %>%
+        group_by(predictor) %>%
+        summarize(shapiro_test_p_value = shapiro.test(prevalence)$p.value)
+
+    predictors_data_normality_test
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":["predictor"],"name":[1],"type":["chr"],"align":["left"]},{"label":["shapiro_test_p_value"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"ACCESS2","2":"4.990353e-50"},{"1":"CHECKUP","2":"1.113963e-28"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+The Shapiro-Wilk test for normality indicates that the predictors data is not normally distributed.
+As the data is valid observations, we will proceed with the analysis without any transformations.
+Given the non-normal distribution of the data, we will use non-parametric tests for the analysis.
+
+We should also check for multicollinearity among the predictors to ensure that the predictors are not highly correlated.
+
+```r
+    library(corrplot)
+    # correlation matrix for predictors data
+    predictors_data_correlation <- predictors_data %>% 
+        select(-LocationID) %>%
+        cor()
+
+    # plot correlation matrix
+    corrplot(predictors_data_correlation, method = 'number', type = 'upper', tl.col = 'black')
+```
+
+![](BMI6106_Spring2024_Project_files/figure-html/predictors_data_multicollinearity-1.png)<!-- -->
+
+
 # Data Analysis
 For our analysis, we theorize that the age-adjusted prevalence of chronic diseases is influenced by:
     * whether the county is urban or rural, 
@@ -779,16 +1273,13 @@ We will analyze the influence of the county type (urban or rural) on the age-adj
 
 <div data-pagedtable="false">
   <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["urban_rural_classification"],"name":[1],"type":["chr"],"align":["left"]},{"label":["ARTHRITIS_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BPHIGH_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["CANCER_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["CASTHMA_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["CERVICAL_AdjPrev"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["CHD_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["COPD_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["DEPRESSION_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["DIABETES_AdjPrev"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["KIDNEY_AdjPrev"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["STROKE_AdjPrev"],"name":[12],"type":["dbl"],"align":["right"]}],"data":[{"1":"Rural","2":"25.26029","3":"33.11223","4":"6.236387","5":"10.44739","6":"81.07078","7":"6.107421","8":"7.561822","9":"23.17236","10":"10.81187","11":"2.998925","12":"3.173388"},{"1":"Urban","2":"24.40463","3":"31.89537","4":"6.201070","5":"10.25517","6":"82.52576","7":"5.518271","8":"6.586542","9":"22.81818","10":"10.13993","11":"2.848574","12":"2.905437"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["urban_rural_classification"],"name":[1],"type":["chr"],"align":["left"]},{"label":["ARTHRITIS_AdjPrev"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["BPHIGH_AdjPrev"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["CANCER_AdjPrev"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["CASTHMA_AdjPrev"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["CHD_AdjPrev"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["COPD_AdjPrev"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["DEPRESSION_AdjPrev"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["DIABETES_AdjPrev"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["KIDNEY_AdjPrev"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["STROKE_AdjPrev"],"name":[11],"type":["dbl"],"align":["right"]}],"data":[{"1":"Rural","2":"25.26029","3":"33.11223","4":"6.236387","5":"10.44739","6":"6.107421","7":"7.561822","8":"23.17236","9":"10.81187","10":"2.998925","11":"3.173388"},{"1":"Urban","2":"24.40463","3":"31.89537","4":"6.201070","5":"10.25517","6":"5.518271","7":"6.586542","8":"22.81818","9":"10.13993","10":"2.848574","11":"2.905437"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 
 ```r
     # visualize the mean age-adjusted prevalence of chronic diseases by urban_rural_classification
     # box plot for each chronic disease column by urban_rural_classification
-    library(ggplot2)
-    library(tidyr)
-
     chronic_diseases_data_long <- chronic_diseases_data %>% pivot_longer(cols = chronic_disease_cols, names_to = 'ChronicDisease', values_to = 'AgeAdjustedPrevalence')
 
     ggplot(chronic_diseases_data_long, aes(x = urban_rural_classification, y = AgeAdjustedPrevalence, fill = urban_rural_classification)) +
@@ -808,12 +1299,65 @@ We will analyze the influence of the county type (urban or rural) on the age-adj
     }) %>% bind_rows()
 
     # display the t-test results
+    # display columns without truncation
+    options(width = 120)
     t_test_results
 ```
 
 <div data-pagedtable="false">
   <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["ChronicDisease"],"name":[1],"type":["chr"],"align":["left"]},{"label":["p_value"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mean_urban"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["mean_rural"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"ARTHRITIS_AdjPrev","2":"6.340180e-17","3":"25.260287","4":"24.404635","_rn_":"mean in group Rural...1"},{"1":"BPHIGH_AdjPrev","2":"8.620106e-13","3":"33.112231","4":"31.895365","_rn_":"mean in group Rural...2"},{"1":"CANCER_AdjPrev","2":"1.536628e-03","3":"6.236387","4":"6.201070","_rn_":"mean in group Rural...3"},{"1":"CASTHMA_AdjPrev","2":"4.050142e-09","3":"10.447390","4":"10.255169","_rn_":"mean in group Rural...4"},{"1":"CERVICAL_AdjPrev","2":"3.903770e-64","3":"81.070778","4":"82.525758","_rn_":"mean in group Rural...5"},{"1":"CHD_AdjPrev","2":"7.858001e-83","3":"6.107421","4":"5.518271","_rn_":"mean in group Rural...6"},{"1":"COPD_AdjPrev","2":"4.359327e-63","3":"7.561822","4":"6.586542","_rn_":"mean in group Rural...7"},{"1":"DEPRESSION_AdjPrev","2":"3.394998e-03","3":"23.172364","4":"22.818182","_rn_":"mean in group Rural...8"},{"1":"DIABETES_AdjPrev","2":"3.299947e-17","3":"10.811873","4":"10.139929","_rn_":"mean in group Rural...9"},{"1":"KIDNEY_AdjPrev","2":"1.331367e-32","3":"2.998925","4":"2.848574","_rn_":"mean in group Rural...10"},{"1":"STROKE_AdjPrev","2":"1.098867e-44","3":"3.173388","4":"2.905437","_rn_":"mean in group Rural...11"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["ChronicDisease"],"name":[1],"type":["chr"],"align":["left"]},{"label":["p_value"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mean_urban"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["mean_rural"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"ARTHRITIS_AdjPrev","2":"6.340180e-17","3":"25.260287","4":"24.404635","_rn_":"mean in group Rural...1"},{"1":"BPHIGH_AdjPrev","2":"8.620106e-13","3":"33.112231","4":"31.895365","_rn_":"mean in group Rural...2"},{"1":"CANCER_AdjPrev","2":"1.536628e-03","3":"6.236387","4":"6.201070","_rn_":"mean in group Rural...3"},{"1":"CASTHMA_AdjPrev","2":"4.050142e-09","3":"10.447390","4":"10.255169","_rn_":"mean in group Rural...4"},{"1":"CHD_AdjPrev","2":"7.858001e-83","3":"6.107421","4":"5.518271","_rn_":"mean in group Rural...5"},{"1":"COPD_AdjPrev","2":"4.359327e-63","3":"7.561822","4":"6.586542","_rn_":"mean in group Rural...6"},{"1":"DEPRESSION_AdjPrev","2":"3.394998e-03","3":"23.172364","4":"22.818182","_rn_":"mean in group Rural...7"},{"1":"DIABETES_AdjPrev","2":"3.299947e-17","3":"10.811873","4":"10.139929","_rn_":"mean in group Rural...8"},{"1":"KIDNEY_AdjPrev","2":"1.331367e-32","3":"2.998925","4":"2.848574","_rn_":"mean in group Rural...9"},{"1":"STROKE_AdjPrev","2":"1.098867e-44","3":"3.173388","4":"2.905437","_rn_":"mean in group Rural...10"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 
+The p-values from the t-tests indicate that there is a significant difference in the age-adjusted prevalence of chronic diseases between urban and rural counties for all chronic diseases. 
+The mean age-adjusted prevalence of chronic diseases is generally higher in urban counties compared to rural counties.
+
+## Factors Influencing the Age-Adjusted Prevalence of Chronic Diseases
+Next, while controlling for the county type, we will analyze the influence predictor variables on the age-adjusted prevalence of chronic diseases.
+
+Our predictors are:
+    * Access to Health Insurance (ACCESS2_AdjPrev)
+    * Regular Health Checkup (CHECKUP_AdjPrev)
+
+We will analyze the relationship between these predictors and the age-adjusted prevalence of chronic diseases, while controlling for the county type.
+    
+
+```r
+    # merge the predictors data with the chronic diseases data
+    predictors_chronic_diseases_data <- merge(predictors_data, chronic_diseases_data, by = 'LocationID')
+
+    # create a new column for urban_rural_classification based on urban_rural_code
+    predictors_chronic_diseases_data$urban_rural_classification <- ifelse(predictors_chronic_diseases_data$urban_rural_code %in% c(1, 2, 3, 4), 'Urban', 'Rural')
+
+    # create a linear regression model for each chronic disease column with predictors
+    linear_regression_results <- lapply(chronic_disease_cols, function(col) {
+        lm_model <- lm(predictors_chronic_diseases_data[[col]] ~ ACCESS2_AdjPrev + CHECKUP_AdjPrev + urban_rural_classification, data = predictors_chronic_diseases_data)
+        summary(lm_model)
+    })
+
+    # extract coefficients and p-values from the linear regression models
+    coefficients_p_values <- lapply(linear_regression_results, function(lm_summary) {
+        data.frame(
+            Predictor = rownames(lm_summary$coefficients)[-1],
+            Coefficient = lm_summary$coefficients[-1, 'Estimate'],
+            P_Value = lm_summary$coefficients[-1, 'Pr(>|t|)']
+        )
+    }) %>% bind_rows()
+
+    # display the coefficients and p-values
+    coefficients_p_values
+```
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Predictor"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Coefficient"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["P_Value"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"ACCESS2_AdjPrev","2":"0.002298727","3":"7.453650e-01","_rn_":"ACCESS2_AdjPrev...1"},{"1":"CHECKUP_AdjPrev","2":"0.355223103","3":"1.232241e-278","_rn_":"CHECKUP_AdjPrev...2"},{"1":"urban_rural_classificationUrban","2":"-1.333461781","3":"7.652735e-55","_rn_":"urban_rural_classificationUrban...3"},{"1":"ACCESS2_AdjPrev","2":"0.349730405","3":"2.041149e-218","_rn_":"ACCESS2_AdjPrev...4"},{"1":"CHECKUP_AdjPrev","2":"0.658765598","3":"0.000000e+00","_rn_":"CHECKUP_AdjPrev...5"},{"1":"urban_rural_classificationUrban","2":"-1.458199916","3":"8.004593e-33","_rn_":"urban_rural_classificationUrban...6"},{"1":"ACCESS2_AdjPrev","2":"-0.037569482","3":"0.000000e+00","_rn_":"ACCESS2_AdjPrev...7"},{"1":"CHECKUP_AdjPrev","2":"0.004686673","3":"4.307756e-08","_rn_":"CHECKUP_AdjPrev...8"},{"1":"urban_rural_classificationUrban","2":"-0.111796582","3":"3.915593e-43","_rn_":"urban_rural_classificationUrban...9"},{"1":"ACCESS2_AdjPrev","2":"-0.003832443","3":"1.730322e-01","_rn_":"ACCESS2_AdjPrev...10"},{"1":"CHECKUP_AdjPrev","2":"0.056352798","3":"1.828778e-54","_rn_":"CHECKUP_AdjPrev...11"},{"1":"urban_rural_classificationUrban","2":"-0.275854015","3":"1.744445e-16","_rn_":"urban_rural_classificationUrban...12"},{"1":"ACCESS2_AdjPrev","2":"0.061318374","3":"1.409204e-155","_rn_":"ACCESS2_AdjPrev...13"},{"1":"CHECKUP_AdjPrev","2":"0.070593901","3":"9.187653e-132","_rn_":"CHECKUP_AdjPrev...14"},{"1":"urban_rural_classificationUrban","2":"-0.570515245","3":"6.521331e-101","_rn_":"urban_rural_classificationUrban...15"},{"1":"ACCESS2_AdjPrev","2":"0.074594956","3":"9.989822e-62","_rn_":"ACCESS2_AdjPrev...16"},{"1":"CHECKUP_AdjPrev","2":"0.153705409","3":"2.166868e-150","_rn_":"CHECKUP_AdjPrev...17"},{"1":"urban_rural_classificationUrban","2":"-1.044663401","3":"3.426115e-84","_rn_":"urban_rural_classificationUrban...18"},{"1":"ACCESS2_AdjPrev","2":"-0.024578666","3":"1.769199e-02","_rn_":"ACCESS2_AdjPrev...19"},{"1":"CHECKUP_AdjPrev","2":"0.161137720","3":"5.082398e-34","_rn_":"CHECKUP_AdjPrev...20"},{"1":"urban_rural_classificationUrban","2":"-0.618747600","3":"4.775986e-07","_rn_":"urban_rural_classificationUrban...21"},{"1":"ACCESS2_AdjPrev","2":"0.266696898","3":"0.000000e+00","_rn_":"ACCESS2_AdjPrev...22"},{"1":"CHECKUP_AdjPrev","2":"0.201138521","3":"3.134312e-218","_rn_":"CHECKUP_AdjPrev...23"},{"1":"urban_rural_classificationUrban","2":"-0.447169466","3":"5.992951e-16","_rn_":"urban_rural_classificationUrban...24"},{"1":"ACCESS2_AdjPrev","2":"0.041062847","3":"0.000000e+00","_rn_":"ACCESS2_AdjPrev...25"},{"1":"CHECKUP_AdjPrev","2":"0.021378755","3":"5.816402e-89","_rn_":"CHECKUP_AdjPrev...26"},{"1":"urban_rural_classificationUrban","2":"-0.102727549","3":"8.056109e-26","_rn_":"urban_rural_classificationUrban...27"},{"1":"ACCESS2_AdjPrev","2":"0.047785687","3":"2.954113e-234","_rn_":"ACCESS2_AdjPrev...28"},{"1":"CHECKUP_AdjPrev","2":"0.047861880","3":"5.842274e-157","_rn_":"CHECKUP_AdjPrev...29"},{"1":"urban_rural_classificationUrban","2":"-0.243722380","3":"1.404110e-51","_rn_":"urban_rural_classificationUrban...30"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+
+# Conclusions:
+The coefficients and p-values from the linear regression models indicate the following relationships between the predictors and the age-adjusted prevalence of chronic diseases, while controlling for the county type:
+
+* Access to Health Insurance (ACCESS2_AdjPrev) does not have a significant impact on the age-adjusted prevalence of chronic diseases for most chronic diseases.
+* Regular Health Checkup (CHECKUP_AdjPrev) has a significant positive impact on the age-adjusted prevalence of chronic diseases for most chronic diseases.
+* Urban counties have a significantly lower age-adjusted prevalence of chronic diseases compared to rural counties for most chronic diseases.
